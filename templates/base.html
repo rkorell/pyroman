@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<!--
+    base.html - PyroMan Basis-Template
+    
+    (c) Dr. Ralf Korell, 2025/26
+    
+    Erstellt: 07.12.2025, 21:00
+-->
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <title>PyroMan - {% block title %}{% endblock %}</title>
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/rkicon.png') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    {% block extra_css %}{% endblock %}
+</head>
+<body data-explosion-sound="{{ url_for('static', filename='sounds/explosion.mp3') }}">
+    <div class="page-wrapper">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-content">
+                <div class="logo">
+                    <img src="{{ url_for('static', filename='images/rkicon.png') }}" alt="RK" onerror="this.style.display='none'">
+                    <span class="logo-text">PyroMan</span>
+                </div>
+                
+                <nav class="nav">
+                    <a href="{{ url_for('koffer_page') }}" class="nav-link {{ 'active' if active_page == 'koffer' else '' }}">Koffer</a>
+                    <a href="{{ url_for('direktzuender_page') }}" class="nav-link {{ 'active' if active_page == 'direktzuender' else '' }}">Direktzünder</a>
+                    <a href="{{ url_for('wartung_page') }}" class="nav-link {{ 'active' if active_page == 'wartung' else '' }}">Wartung</a>
+                </nav>
+                
+                <div class="header-actions" style="display: flex; gap: 0.5rem;">
+                    <button id="audio-toggle" class="theme-toggle" title="Ton an/aus">🔊</button>
+                    <button id="theme-toggle" class="theme-toggle" title="Theme wechseln">☀️</button>
+                </div>
+            </div>
+        </header>
+        
+        <!-- Auth Status Banner -->
+        <div id="auth-banner" class="status-banner danger">
+            🔒 Nicht autorisiert - Bitte anmelden
+        </div>
+        
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="container">
+                <!-- Fire Master Switch -->
+                <div id="fire-master" class="fire-master inactive mb-lg">
+                    <div id="fire-master-toggle" class="toggle"></div>
+                    <span class="fire-master-label">Feuer</span>
+                    
+                    <div style="flex: 1;"></div>
+                    
+                    <button id="login-btn" class="btn btn-primary">
+                        🔑 Anmelden
+                    </button>
+                    
+                    <button id="reset-all-btn" class="btn btn-outline">
+                        ↺ Alle Reset
+                    </button>
+                </div>
+                
+                {% block content %}{% endblock %}
+            </div>
+        </main>
+        
+        <!-- Footer -->
+        <footer class="footer">
+            © Dr. Ralf Korell 2025/26
+        </footer>
+    </div>
+    
+    <!-- Auth Modal (Fake Password) -->
+    <div id="auth-overlay" class="auth-overlay">
+        <div class="auth-modal">
+            <h2 class="auth-title">🔐 Anmeldung</h2>
+            <input type="password" class="auth-input" placeholder="••••••" readonly>
+            <p class="auth-hint">Bitte Passwort eingeben...</p>
+        </div>
+    </div>
+    
+    <script src="{{ url_for('static', filename='js/pyroman.js') }}"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

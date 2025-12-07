@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<!--
+    error.html - PyroMan Fehlerseite
+    
+    Zeigt Config-Fehler prominent an
+    
+    (c) Dr. Ralf Korell, 2025/26
+    
+    Erstellt: 07.12.2025, 21:00
+-->
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PyroMan - Konfigurationsfehler</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="page-wrapper">
+        <header class="header">
+            <div class="header-content">
+                <div class="logo">
+                    <span class="logo-text">PyroMan</span>
+                </div>
+            </div>
+        </header>
+        
+        <main class="main-content">
+            <div class="error-container fade-in">
+                <div class="error-icon">⚠️</div>
+                <h1 class="error-title">Konfigurationsfehler</h1>
+                <p class="text-muted mb-lg">
+                    PyroMan kann nicht starten. Bitte config.json prüfen:
+                </p>
+                
+                <ul class="error-list">
+                    {% for error in errors %}
+                    <li>❌ {{ error }}</li>
+                    {% endfor %}
+                </ul>
+                
+                <p class="text-muted mt-lg">
+                    Nach Korrektur bitte den Pi neu starten oder den Dienst neu laden.
+                </p>
+                
+                <div class="mt-lg">
+                    <code style="color: var(--accent-primary);">
+                        sudo systemctl restart pyroman
+                    </code>
+                </div>
+            </div>
+        </main>
+        
+        <footer class="footer">
+            © Dr. Ralf Korell 2025/26
+        </footer>
+    </div>
+</body>
+</html>

@@ -1,0 +1,64 @@
+<!--
+    wartung.html - PyroMan Direktzünder Wartung
+    
+    Liste aller Direktzünder mit Enable/Disable Toggle
+    
+    (c) Dr. Ralf Korell, 2025/26
+    
+    Erstellt: 07.12.2025, 21:00
+-->
+{% extends "base.html" %}
+
+{% block title %}Wartung{% endblock %}
+
+{% block content %}
+<div class="fade-in">
+    <div class="section-header">
+        <h2 class="section-title">🔧 Direktzünder Wartung</h2>
+        <div class="section-divider"></div>
+    </div>
+    
+    <div class="card mb-lg">
+        <p class="text-muted mb-md">
+            Hier können Sie einzelne Direktzünder aktivieren oder deaktivieren.
+            Deaktivierte Zünder werden auf der Hauptseite mit einem Schraubenschlüssel-Icon
+            angezeigt und können nicht ausgelöst werden.
+        </p>
+        <p class="text-muted">
+            <strong>Tipp:</strong> Deaktivieren Sie defekte oder nicht angeschlossene Zünder,
+            um versehentliches Auslösen zu verhindern.
+        </p>
+    </div>
+    
+    <div class="wartung-list">
+        {% for dz in direktzuender_list %}
+        <div class="wartung-item {{ '' if dz.available else 'disabled' }}" data-nr="{{ dz.nr }}">
+            <div class="wartung-item-label">
+                {% if dz.available %}
+                <img src="{{ url_for('static', filename='images/fw_off.png') }}" 
+                     alt="" 
+                     style="height: 24px; vertical-align: middle; margin-right: 8px;"
+                     onerror="this.style.display='none'">
+                {% else %}
+                <img src="{{ url_for('static', filename='images/fw_n_a.png') }}" 
+                     alt="" 
+                     style="height: 24px; vertical-align: middle; margin-right: 8px;"
+                     onerror="this.style.display='none'">
+                {% endif %}
+                Direktzünder {{ dz.nr }}
+            </div>
+            <div class="toggle-container">
+                <span class="toggle-label">{{ 'Aktiv' if dz.available else 'Inaktiv' }}</span>
+                <div class="toggle {{ 'active' if dz.available else '' }}"></div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    
+    <div class="mt-lg text-center">
+        <p class="text-muted">
+            Änderungen werden sofort gespeichert und überleben einen Neustart.
+        </p>
+    </div>
+</div>
+{% endblock %}

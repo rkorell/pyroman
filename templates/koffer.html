@@ -1,0 +1,80 @@
+<!--
+    koffer.html - PyroMan Funkkoffer Interface
+    
+    Dropdown zur Kofferauswahl, 8 Kanäle + 2 Batteriefeuer
+    
+    (c) Dr. Ralf Korell, 2025/26
+    
+    Erstellt: 07.12.2025, 21:00
+-->
+{% extends "base.html" %}
+
+{% block title %}Koffer{% endblock %}
+
+{% block content %}
+<div class="fade-in">
+    <!-- Koffer Auswahl -->
+    <div class="card mb-lg">
+        <div class="koffer-selector">
+            <label for="koffer-select" style="font-weight: 600; font-size: 1.1rem;">
+                Aktiver Koffer:
+            </label>
+            <select id="koffer-select" class="koffer-dropdown">
+                {% for koffer in koffer_list %}
+                <option value="{{ koffer.id }}" {{ 'selected' if koffer.id == current_koffer.id else '' }}>
+                    {{ koffer.name }}
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+    </div>
+    
+    <!-- Kanäle 1-8 -->
+    <div class="section-header">
+        <h2 class="section-title">Kanäle</h2>
+        <div class="section-divider"></div>
+    </div>
+    
+    <div class="card mb-lg">
+        <div class="button-grid button-grid-4">
+            {% for kanal_nr in range(1, 9) %}
+            <button class="fire-btn ready" 
+                    data-koffer="{{ current_koffer.id }}" 
+                    data-kanal="{{ kanal_nr }}">
+                <img src="{{ url_for('static', filename='images/zuenderklein.png') }}" 
+                     alt="Zünder"
+                     onerror="this.style.display='none'">
+                <span class="label">Kanal {{ kanal_nr }}</span>
+            </button>
+            {% endfor %}
+        </div>
+    </div>
+    
+    <!-- Batteriefeuer -->
+    <div class="section-header">
+        <h2 class="section-title">Batteriefeuer</h2>
+        <div class="section-divider"></div>
+    </div>
+    
+    <div class="card">
+        <div class="button-grid button-grid-2">
+            <button class="fire-btn ready" 
+                    data-koffer="{{ current_koffer.id }}" 
+                    data-kanal="9">
+                <img src="{{ url_for('static', filename='images/zuenderklein.png') }}" 
+                     alt="Zünder"
+                     onerror="this.style.display='none'">
+                <span class="label">Batterie 1-4</span>
+            </button>
+            <button class="fire-btn ready" 
+                    data-koffer="{{ current_koffer.id }}" 
+                    data-kanal="10">
+                <img src="{{ url_for('static', filename='images/zuenderklein.png') }}" 
+                     alt="Zünder"
+                     onerror="this.style.display='none'">
+                <span class="label">Batterie 5-8</span>
+            </button>
+        </div>
+    </div>
+</div>
+{% endblock %}

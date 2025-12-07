@@ -1,0 +1,51 @@
+<!--
+    direktzuender.html - PyroMan Direktzünder Interface
+    
+    Grid mit 50 Buttons
+    
+    (c) Dr. Ralf Korell, 2025/26
+    
+    Erstellt: 07.12.2025, 21:00
+-->
+{% extends "base.html" %}
+
+{% block title %}Direktzünder{% endblock %}
+
+{% block content %}
+<div class="fade-in">
+    <div class="section-header">
+        <h2 class="section-title">Direktzünder</h2>
+        <div class="section-divider"></div>
+        <span class="text-muted">{{ direktzuender_list | length }} Stück</span>
+    </div>
+    
+    <div class="card">
+        <div class="direktzuender-grid">
+            {% for dz in direktzuender_list %}
+            <button class="fire-btn direktzuender-btn {{ 'ready' if dz.available else 'unavailable' }}" 
+                    data-direktzuender="{{ dz.nr }}"
+                    data-available="{{ 'true' if dz.available else 'false' }}">
+                {% if dz.available %}
+                <img src="{{ url_for('static', filename='images/fw_off.png') }}" 
+                     alt="Rakete"
+                     onerror="this.style.display='none'">
+                {% else %}
+                <img src="{{ url_for('static', filename='images/fw_n_a.png') }}" 
+                     alt="N/A"
+                     onerror="this.style.display='none'">
+                {% endif %}
+                <span class="nr">{{ dz.nr }}</span>
+            </button>
+            {% endfor %}
+        </div>
+    </div>
+    
+    <div class="mt-lg text-center text-muted">
+        <p>
+            🟢 Verfügbar &nbsp;&nbsp;
+            🔴 Abgefeuert &nbsp;&nbsp;
+            🔧 Nicht verfügbar (siehe Wartung)
+        </p>
+    </div>
+</div>
+{% endblock %}

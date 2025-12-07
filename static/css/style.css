@@ -1,0 +1,823 @@
+/*
+ * style.css - PyroMan Stylesheet
+ * 
+ * Fancy Dark-Mode Design mit Cards, Transitions, Touch-optimiert
+ * 
+ * (c) Dr. Ralf Korell, 2025/26
+ * 
+ * Erstellt: 07.12.2025, 21:00
+ */
+
+/* =============================================================================
+   CSS Variables / Theme
+   ============================================================================= */
+
+:root {
+    /* Dark Mode (Default) */
+    --bg-primary: #0a0a0f;
+    --bg-secondary: #12121a;
+    --bg-card: #1a1a25;
+    --bg-card-hover: #222230;
+    
+    --text-primary: #f0f0f5;
+    --text-secondary: #a0a0b0;
+    --text-muted: #606070;
+    
+    --accent-primary: #ff6b00;
+    --accent-secondary: #ff9500;
+    --accent-glow: rgba(255, 107, 0, 0.4);
+    
+    --success: #00c853;
+    --success-dark: #003705;
+    --success-glow: rgba(0, 200, 83, 0.3);
+    
+    --danger: #ff1744;
+    --danger-dark: #700005;
+    --danger-glow: rgba(255, 23, 68, 0.3);
+    
+    --warning: #ffc107;
+    --warning-glow: rgba(255, 193, 7, 0.3);
+    
+    --border-color: #2a2a3a;
+    --shadow-color: rgba(0, 0, 0, 0.5);
+    
+    /* Spacing */
+    --spacing-xs: 0.25rem;
+    --spacing-sm: 0.5rem;
+    --spacing-md: 1rem;
+    --spacing-lg: 1.5rem;
+    --spacing-xl: 2rem;
+    
+    /* Border Radius */
+    --radius-sm: 4px;
+    --radius-md: 8px;
+    --radius-lg: 12px;
+    --radius-xl: 16px;
+    --radius-round: 50%;
+    
+    /* Transitions */
+    --transition-fast: 0.15s ease;
+    --transition-normal: 0.25s ease;
+    --transition-slow: 0.4s ease;
+    
+    /* Scroll Safety */
+    --scroll-safe-zone: 50px;
+}
+
+/* Light Mode */
+[data-theme="light"] {
+    --bg-primary: #f5f5f8;
+    --bg-secondary: #e8e8ed;
+    --bg-card: #ffffff;
+    --bg-card-hover: #f0f0f5;
+    
+    --text-primary: #1a1a25;
+    --text-secondary: #505060;
+    --text-muted: #909098;
+    
+    --border-color: #d0d0d8;
+    --shadow-color: rgba(0, 0, 0, 0.15);
+}
+
+/* =============================================================================
+   Base Styles
+   ============================================================================= */
+
+*, *::before, *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+html {
+    font-size: 16px;
+    -webkit-tap-highlight-color: transparent;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    min-height: 100vh;
+    line-height: 1.5;
+    padding-right: var(--scroll-safe-zone); /* Scroll-Sicherheitsbereich */
+}
+
+a {
+    color: var(--accent-primary);
+    text-decoration: none;
+    transition: color var(--transition-fast);
+}
+
+a:hover {
+    color: var(--accent-secondary);
+}
+
+/* =============================================================================
+   Layout
+   ============================================================================= */
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: var(--spacing-md);
+}
+
+.page-wrapper {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+.main-content {
+    flex: 1;
+    padding: var(--spacing-lg) var(--spacing-md);
+}
+
+/* =============================================================================
+   Header
+   ============================================================================= */
+
+.header {
+    background: var(--bg-secondary);
+    border-bottom: 1px solid var(--border-color);
+    padding: var(--spacing-md) var(--spacing-lg);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 2px 10px var(--shadow-color);
+}
+
+.header-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+}
+
+.logo img {
+    height: 40px;
+    width: auto;
+}
+
+.logo-text {
+    font-size: 1.5rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+/* =============================================================================
+   Navigation
+   ============================================================================= */
+
+.nav {
+    display: flex;
+    gap: var(--spacing-sm);
+}
+
+.nav-link {
+    padding: var(--spacing-sm) var(--spacing-md);
+    border-radius: var(--radius-md);
+    color: var(--text-secondary);
+    font-weight: 500;
+    transition: all var(--transition-fast);
+}
+
+.nav-link:hover {
+    background: var(--bg-card);
+    color: var(--text-primary);
+}
+
+.nav-link.active {
+    background: var(--accent-primary);
+    color: white;
+}
+
+/* =============================================================================
+   Status Banner
+   ============================================================================= */
+
+.status-banner {
+    padding: var(--spacing-sm) var(--spacing-md);
+    text-align: center;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-size: 0.9rem;
+}
+
+.status-banner.danger {
+    background: var(--danger-dark);
+    color: var(--danger);
+    animation: pulse-danger 1.5s ease-in-out infinite;
+}
+
+.status-banner.success {
+    background: var(--success-dark);
+    color: var(--success);
+}
+
+.status-banner.warning {
+    background: rgba(255, 193, 7, 0.2);
+    color: var(--warning);
+}
+
+@keyframes pulse-danger {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.6; }
+}
+
+/* =============================================================================
+   Cards
+   ============================================================================= */
+
+.card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-lg);
+    box-shadow: 0 4px 20px var(--shadow-color);
+    transition: all var(--transition-normal);
+}
+
+.card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 30px var(--shadow-color);
+}
+
+.card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: var(--spacing-md);
+    padding-bottom: var(--spacing-md);
+    border-bottom: 1px solid var(--border-color);
+}
+
+.card-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+}
+
+/* =============================================================================
+   Buttons (Generic)
+   ============================================================================= */
+
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--spacing-sm);
+    padding: var(--spacing-sm) var(--spacing-lg);
+    border: none;
+    border-radius: var(--radius-md);
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.btn:active {
+    transform: scale(0.97);
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+    color: white;
+    box-shadow: 0 4px 15px var(--accent-glow);
+}
+
+.btn-primary:hover {
+    box-shadow: 0 6px 25px var(--accent-glow);
+    transform: translateY(-2px);
+}
+
+.btn-success {
+    background: linear-gradient(135deg, var(--success), #00e676);
+    color: white;
+    box-shadow: 0 4px 15px var(--success-glow);
+}
+
+.btn-danger {
+    background: linear-gradient(135deg, var(--danger), #ff5252);
+    color: white;
+    box-shadow: 0 4px 15px var(--danger-glow);
+}
+
+.btn-outline {
+    background: transparent;
+    border: 2px solid var(--border-color);
+    color: var(--text-secondary);
+}
+
+.btn-outline:hover {
+    border-color: var(--accent-primary);
+    color: var(--accent-primary);
+}
+
+/* =============================================================================
+   Fire Buttons (Zündknöpfe)
+   ============================================================================= */
+
+.fire-btn {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 1;
+    border: none;
+    border-radius: var(--radius-lg);
+    cursor: pointer;
+    overflow: hidden;
+    transition: all var(--transition-normal);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: var(--spacing-sm);
+    font-weight: 600;
+    font-size: 1rem;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.fire-btn img {
+    width: 50%;
+    height: auto;
+    max-height: 60%;
+    object-fit: contain;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+}
+
+.fire-btn .label {
+    color: white;
+}
+
+/* Feuerbereit (Grün) */
+.fire-btn.ready {
+    background: linear-gradient(145deg, #004d00, var(--success-dark));
+    border: 2px solid var(--success);
+    box-shadow: 0 4px 20px var(--success-glow),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.fire-btn.ready:hover {
+    transform: scale(1.03);
+    box-shadow: 0 8px 30px var(--success-glow),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.fire-btn.ready:active {
+    transform: scale(0.97);
+}
+
+/* Abgefeuert (Rot) */
+.fire-btn.fired {
+    background: linear-gradient(145deg, #8b0000, var(--danger-dark));
+    border: 2px solid var(--danger);
+    box-shadow: 0 4px 20px var(--danger-glow),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    cursor: default;
+}
+
+/* Nicht verfügbar */
+.fire-btn.unavailable {
+    background: linear-gradient(145deg, #2a2a35, #1a1a22);
+    border: 2px solid var(--border-color);
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+/* Deaktiviert (Feuer aus) */
+.fire-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none !important;
+}
+
+/* =============================================================================
+   Button Grid (für Kanäle)
+   ============================================================================= */
+
+.button-grid {
+    display: grid;
+    gap: var(--spacing-md);
+}
+
+.button-grid-4 {
+    grid-template-columns: repeat(4, 1fr);
+}
+
+.button-grid-5 {
+    grid-template-columns: repeat(5, 1fr);
+}
+
+.button-grid-2 {
+    grid-template-columns: repeat(2, 1fr);
+}
+
+@media (max-width: 768px) {
+    .button-grid-4,
+    .button-grid-5 {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+/* =============================================================================
+   Direktzünder Grid (50 Buttons)
+   ============================================================================= */
+
+.direktzuender-grid {
+    display: grid;
+    grid-template-columns: repeat(10, 1fr);
+    gap: var(--spacing-sm);
+}
+
+@media (max-width: 1024px) {
+    .direktzuender-grid {
+        grid-template-columns: repeat(5, 1fr);
+    }
+}
+
+@media (max-width: 600px) {
+    .direktzuender-grid {
+        grid-template-columns: repeat(4, 1fr);
+    }
+}
+
+.direktzuender-btn {
+    aspect-ratio: 1;
+    font-size: 0.8rem;
+    padding: var(--spacing-xs);
+}
+
+.direktzuender-btn .nr {
+    font-size: 1.2rem;
+    font-weight: 700;
+}
+
+/* =============================================================================
+   Koffer Selector
+   ============================================================================= */
+
+.koffer-selector {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+    flex-wrap: wrap;
+}
+
+.koffer-dropdown {
+    padding: var(--spacing-sm) var(--spacing-md);
+    font-size: 1rem;
+    background: var(--bg-card);
+    color: var(--text-primary);
+    border: 2px solid var(--border-color);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    min-width: 200px;
+    transition: all var(--transition-fast);
+}
+
+.koffer-dropdown:hover,
+.koffer-dropdown:focus {
+    border-color: var(--accent-primary);
+    outline: none;
+}
+
+/* =============================================================================
+   Toggle Switch
+   ============================================================================= */
+
+.toggle-container {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+}
+
+.toggle {
+    position: relative;
+    width: 60px;
+    height: 32px;
+    background: var(--bg-card);
+    border: 2px solid var(--border-color);
+    border-radius: 16px;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.toggle::after {
+    content: '';
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 22px;
+    height: 22px;
+    background: var(--text-secondary);
+    border-radius: var(--radius-round);
+    transition: all var(--transition-fast);
+}
+
+.toggle.active {
+    background: var(--success-dark);
+    border-color: var(--success);
+}
+
+.toggle.active::after {
+    left: 31px;
+    background: var(--success);
+}
+
+.toggle-label {
+    font-weight: 500;
+    color: var(--text-secondary);
+}
+
+/* =============================================================================
+   Fire Master Switch
+   ============================================================================= */
+
+.fire-master {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-lg);
+    padding: var(--spacing-md) var(--spacing-lg);
+    background: var(--bg-card);
+    border-radius: var(--radius-lg);
+    border: 2px solid var(--border-color);
+}
+
+.fire-master.active {
+    border-color: var(--success);
+    box-shadow: 0 0 20px var(--success-glow);
+}
+
+.fire-master.inactive {
+    border-color: var(--danger);
+    box-shadow: 0 0 20px var(--danger-glow);
+}
+
+.fire-master-label {
+    font-size: 1.1rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.fire-master.active .fire-master-label {
+    color: var(--success);
+}
+
+.fire-master.inactive .fire-master-label {
+    color: var(--danger);
+}
+
+/* =============================================================================
+   Wartung Liste
+   ============================================================================= */
+
+.wartung-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: var(--spacing-md);
+}
+
+.wartung-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--spacing-md);
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    transition: all var(--transition-fast);
+}
+
+.wartung-item:hover {
+    border-color: var(--accent-primary);
+}
+
+.wartung-item.disabled {
+    opacity: 0.6;
+    background: var(--bg-secondary);
+}
+
+.wartung-item-label {
+    font-weight: 500;
+}
+
+/* =============================================================================
+   Section Headers
+   ============================================================================= */
+
+.section-header {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+    margin-bottom: var(--spacing-lg);
+}
+
+.section-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+}
+
+.section-divider {
+    flex: 1;
+    height: 2px;
+    background: linear-gradient(90deg, var(--border-color), transparent);
+}
+
+/* =============================================================================
+   Footer
+   ============================================================================= */
+
+.footer {
+    background: var(--bg-secondary);
+    border-top: 1px solid var(--border-color);
+    padding: var(--spacing-md);
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 0.85rem;
+}
+
+/* =============================================================================
+   Error Page
+   ============================================================================= */
+
+.error-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 60vh;
+    text-align: center;
+    padding: var(--spacing-xl);
+}
+
+.error-icon {
+    font-size: 5rem;
+    color: var(--danger);
+    margin-bottom: var(--spacing-lg);
+}
+
+.error-title {
+    font-size: 2rem;
+    color: var(--danger);
+    margin-bottom: var(--spacing-md);
+}
+
+.error-list {
+    list-style: none;
+    margin: var(--spacing-lg) 0;
+}
+
+.error-list li {
+    padding: var(--spacing-sm) var(--spacing-md);
+    background: var(--danger-dark);
+    border-left: 4px solid var(--danger);
+    margin-bottom: var(--spacing-sm);
+    text-align: left;
+    border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+}
+
+/* =============================================================================
+   Theme Toggle
+   ============================================================================= */
+
+.theme-toggle {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-round);
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 1.2rem;
+    transition: all var(--transition-fast);
+}
+
+.theme-toggle:hover {
+    border-color: var(--accent-primary);
+    transform: rotate(15deg);
+}
+
+/* =============================================================================
+   Auth Modal (Fake Password)
+   ============================================================================= */
+
+.auth-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    opacity: 0;
+    visibility: hidden;
+    transition: all var(--transition-normal);
+}
+
+.auth-overlay.visible {
+    opacity: 1;
+    visibility: visible;
+}
+
+.auth-modal {
+    background: var(--bg-card);
+    padding: var(--spacing-xl);
+    border-radius: var(--radius-xl);
+    box-shadow: 0 20px 60px var(--shadow-color);
+    text-align: center;
+    max-width: 400px;
+    width: 90%;
+    transform: scale(0.9);
+    transition: all var(--transition-normal);
+}
+
+.auth-overlay.visible .auth-modal {
+    transform: scale(1);
+}
+
+.auth-title {
+    font-size: 1.5rem;
+    margin-bottom: var(--spacing-lg);
+}
+
+.auth-input {
+    width: 100%;
+    padding: var(--spacing-md);
+    font-size: 1.2rem;
+    background: var(--bg-secondary);
+    border: 2px solid var(--border-color);
+    border-radius: var(--radius-md);
+    color: var(--text-primary);
+    text-align: center;
+    letter-spacing: 4px;
+}
+
+.auth-input:focus {
+    outline: none;
+    border-color: var(--accent-primary);
+}
+
+.auth-hint {
+    margin-top: var(--spacing-md);
+    color: var(--text-muted);
+    font-size: 0.9rem;
+}
+
+/* =============================================================================
+   Animations
+   ============================================================================= */
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.fade-in {
+    animation: fadeIn var(--transition-normal) ease forwards;
+}
+
+@keyframes fireEffect {
+    0% { box-shadow: 0 0 20px var(--danger-glow); }
+    50% { box-shadow: 0 0 40px var(--danger-glow), 0 0 60px var(--accent-glow); }
+    100% { box-shadow: 0 0 20px var(--danger-glow); }
+}
+
+.fire-animation {
+    animation: fireEffect 0.5s ease;
+}
+
+/* =============================================================================
+   Utility Classes
+   ============================================================================= */
+
+.text-center { text-align: center; }
+.text-success { color: var(--success); }
+.text-danger { color: var(--danger); }
+.text-warning { color: var(--warning); }
+.text-muted { color: var(--text-muted); }
+
+.mt-sm { margin-top: var(--spacing-sm); }
+.mt-md { margin-top: var(--spacing-md); }
+.mt-lg { margin-top: var(--spacing-lg); }
+.mb-sm { margin-bottom: var(--spacing-sm); }
+.mb-md { margin-bottom: var(--spacing-md); }
+.mb-lg { margin-bottom: var(--spacing-lg); }
+
+.hidden { display: none !important; }
+.visible { display: block !important; }

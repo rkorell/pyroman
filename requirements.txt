@@ -1,0 +1,7 @@
+# PyroMan Requirements
+# (c) Dr. Ralf Korell, 2025/26
+# Erstellt: 07.12.2025, 21:00
+
+Flask>=2.0
+flask-sock>=0.6.0
+pigpio>=1.78
