@@ -1,11 +1,16 @@
 {
   "_comment": "PyroMan Konfiguration - TEMPLATE",
-  "_created": "06.12.2025, 21:10",
-  "_instructions": "Kopieren nach config.json und alle CHANGE_ME Werte ersetzen!",
+  "_copyright": "(c) Dr. Ralf Korell, 2025/26",
+  "_instructions": "Kopieren nach config.json und anpassen!",
+  "_created": "07.12.2025, 15:45",
 
   "system": {
     "name": "PyroMan",
     "version": "2025.1"
+  },
+
+  "logging": {
+    "level": "DEBUG"
   },
 
   "rf_sender": {
@@ -23,231 +28,18 @@
 
   "autorisierung": {
     "auth_required": true,
-    "auth_code": "CHANGE_ME",
     "auth_timeout_sekunden": 5
   },
 
-  "funkkoffer": {
-    "enabled": true,
-    "koffer": [
-      {
-        "id": 1,
-        "name": "Koffer 1",
-        "enabled": true,
-        "kanaele": [
-          {"nr": 1, "code": "CHANGE_ME", "label": "Kanal 1"},
-          {"nr": 2, "code": "CHANGE_ME", "label": "Kanal 2"},
-          {"nr": 3, "code": "CHANGE_ME", "label": "Kanal 3"},
-          {"nr": 4, "code": "CHANGE_ME", "label": "Kanal 4"},
-          {"nr": 5, "code": "CHANGE_ME", "label": "Kanal 5"},
-          {"nr": 6, "code": "CHANGE_ME", "label": "Kanal 6"},
-          {"nr": 7, "code": "CHANGE_ME", "label": "Kanal 7"},
-          {"nr": 8, "code": "CHANGE_ME", "label": "Kanal 8"}
-        ],
-        "batteriefeuer": [
-          {"nr": 9, "code": "CHANGE_ME", "label": "Batterie 1-4"},
-          {"nr": 10, "code": "CHANGE_ME", "label": "Batterie 5-8"}
-        ]
-      },
-      {
-        "id": 2,
-        "name": "Koffer 2",
-        "enabled": true,
-        "kanaele": [
-          {"nr": 1, "code": "CHANGE_ME", "label": "Kanal 1"},
-          {"nr": 2, "code": "CHANGE_ME", "label": "Kanal 2"},
-          {"nr": 3, "code": "CHANGE_ME", "label": "Kanal 3"},
-          {"nr": 4, "code": "CHANGE_ME", "label": "Kanal 4"},
-          {"nr": 5, "code": "CHANGE_ME", "label": "Kanal 5"},
-          {"nr": 6, "code": "CHANGE_ME", "label": "Kanal 6"},
-          {"nr": 7, "code": "CHANGE_ME", "label": "Kanal 7"},
-          {"nr": 8, "code": "CHANGE_ME", "label": "Kanal 8"}
-        ],
-        "batteriefeuer": [
-          {"nr": 9, "code": "CHANGE_ME", "label": "Batterie 1-4"},
-          {"nr": 10, "code": "CHANGE_ME", "label": "Batterie 5-8"}
-        ]
-      },
-      {
-        "id": 3,
-        "name": "Koffer 3",
-        "enabled": true,
-        "kanaele": [
-          {"nr": 1, "code": "CHANGE_ME", "label": "Kanal 1"},
-          {"nr": 2, "code": "CHANGE_ME", "label": "Kanal 2"},
-          {"nr": 3, "code": "CHANGE_ME", "label": "Kanal 3"},
-          {"nr": 4, "code": "CHANGE_ME", "label": "Kanal 4"},
-          {"nr": 5, "code": "CHANGE_ME", "label": "Kanal 5"},
-          {"nr": 6, "code": "CHANGE_ME", "label": "Kanal 6"},
-          {"nr": 7, "code": "CHANGE_ME", "label": "Kanal 7"},
-          {"nr": 8, "code": "CHANGE_ME", "label": "Kanal 8"}
-        ],
-        "batteriefeuer": [
-          {"nr": 9, "code": "CHANGE_ME", "label": "Batterie 1-4"},
-          {"nr": 10, "code": "CHANGE_ME", "label": "Batterie 5-8"}
-        ]
-      },
-      {
-        "id": 4,
-        "name": "Koffer 4",
-        "enabled": true,
-        "kanaele": [
-          {"nr": 1, "code": "CHANGE_ME", "label": "Kanal 1"},
-          {"nr": 2, "code": "CHANGE_ME", "label": "Kanal 2"},
-          {"nr": 3, "code": "CHANGE_ME", "label": "Kanal 3"},
-          {"nr": 4, "code": "CHANGE_ME", "label": "Kanal 4"},
-          {"nr": 5, "code": "CHANGE_ME", "label": "Kanal 5"},
-          {"nr": 6, "code": "CHANGE_ME", "label": "Kanal 6"},
-          {"nr": 7, "code": "CHANGE_ME", "label": "Kanal 7"},
-          {"nr": 8, "code": "CHANGE_ME", "label": "Kanal 8"}
-        ],
-        "batteriefeuer": [
-          {"nr": 9, "code": "CHANGE_ME", "label": "Batterie 1-4"},
-          {"nr": 10, "code": "CHANGE_ME", "label": "Batterie 5-8"}
-        ]
-      },
-      {
-        "id": 5,
-        "name": "Koffer 5",
-        "enabled": true,
-        "kanaele": [
-          {"nr": 1, "code": "CHANGE_ME", "label": "Kanal 1"},
-          {"nr": 2, "code": "CHANGE_ME", "label": "Kanal 2"},
-          {"nr": 3, "code": "CHANGE_ME", "label": "Kanal 3"},
-          {"nr": 4, "code": "CHANGE_ME", "label": "Kanal 4"},
-          {"nr": 5, "code": "CHANGE_ME", "label": "Kanal 5"},
-          {"nr": 6, "code": "CHANGE_ME", "label": "Kanal 6"},
-          {"nr": 7, "code": "CHANGE_ME", "label": "Kanal 7"},
-          {"nr": 8, "code": "CHANGE_ME", "label": "Kanal 8"}
-        ],
-        "batteriefeuer": [
-          {"nr": 9, "code": "CHANGE_ME", "label": "Batterie 1-4"},
-          {"nr": 10, "code": "CHANGE_ME", "label": "Batterie 5-8"}
-        ]
-      },
-      {
-        "id": 6,
-        "name": "Koffer 6",
-        "enabled": false,
-        "kanaele": [
-          {"nr": 1, "code": "CHANGE_ME", "label": "Kanal 1"},
-          {"nr": 2, "code": "CHANGE_ME", "label": "Kanal 2"},
-          {"nr": 3, "code": "CHANGE_ME", "label": "Kanal 3"},
-          {"nr": 4, "code": "CHANGE_ME", "label": "Kanal 4"},
-          {"nr": 5, "code": "CHANGE_ME", "label": "Kanal 5"},
-          {"nr": 6, "code": "CHANGE_ME", "label": "Kanal 6"},
-          {"nr": 7, "code": "CHANGE_ME", "label": "Kanal 7"},
-          {"nr": 8, "code": "CHANGE_ME", "label": "Kanal 8"}
-        ],
-        "batteriefeuer": [
-          {"nr": 9, "code": "CHANGE_ME", "label": "Batterie 1-4"},
-          {"nr": 10, "code": "CHANGE_ME", "label": "Batterie 5-8"}
-        ]
-      },
-      {
-        "id": 7,
-        "name": "Koffer 7",
-        "enabled": false,
-        "kanaele": [
-          {"nr": 1, "code": "CHANGE_ME", "label": "Kanal 1"},
-          {"nr": 2, "code": "CHANGE_ME", "label": "Kanal 2"},
-          {"nr": 3, "code": "CHANGE_ME", "label": "Kanal 3"},
-          {"nr": 4, "code": "CHANGE_ME", "label": "Kanal 4"},
-          {"nr": 5, "code": "CHANGE_ME", "label": "Kanal 5"},
-          {"nr": 6, "code": "CHANGE_ME", "label": "Kanal 6"},
-          {"nr": 7, "code": "CHANGE_ME", "label": "Kanal 7"},
-          {"nr": 8, "code": "CHANGE_ME", "label": "Kanal 8"}
-        ],
-        "batteriefeuer": [
-          {"nr": 9, "code": "CHANGE_ME", "label": "Batterie 1-4"},
-          {"nr": 10, "code": "CHANGE_ME", "label": "Batterie 5-8"}
-        ]
-      },
-      {
-        "id": 8,
-        "name": "Koffer 8",
-        "enabled": false,
-        "kanaele": [
-          {"nr": 1, "code": "CHANGE_ME", "label": "Kanal 1"},
-          {"nr": 2, "code": "CHANGE_ME", "label": "Kanal 2"},
-          {"nr": 3, "code": "CHANGE_ME", "label": "Kanal 3"},
-          {"nr": 4, "code": "CHANGE_ME", "label": "Kanal 4"},
-          {"nr": 5, "code": "CHANGE_ME", "label": "Kanal 5"},
-          {"nr": 6, "code": "CHANGE_ME", "label": "Kanal 6"},
-          {"nr": 7, "code": "CHANGE_ME", "label": "Kanal 7"},
-          {"nr": 8, "code": "CHANGE_ME", "label": "Kanal 8"}
-        ],
-        "batteriefeuer": [
-          {"nr": 9, "code": "CHANGE_ME", "label": "Batterie 1-4"},
-          {"nr": 10, "code": "CHANGE_ME", "label": "Batterie 5-8"}
-        ]
-      }
-    ]
-  },
+  "koffer": [
+    {"id": 1, "name": "Koffer 1", "koffer_nummer": 100, "enabled": true},
+    {"id": 2, "name": "Koffer 2", "koffer_nummer": 200, "enabled": true}
+  ],
 
-  "dumme_boxen": {
+  "direktzuender": {
     "enabled": true,
-    "name": "Feuerwerk",
-    "boxen": [
-      {"nr": 1, "code": "CHANGE_ME", "label": "Box 1", "available": true},
-      {"nr": 2, "code": "CHANGE_ME", "label": "Box 2", "available": true},
-      {"nr": 3, "code": "CHANGE_ME", "label": "Box 3", "available": true},
-      {"nr": 4, "code": "CHANGE_ME", "label": "Box 4", "available": true},
-      {"nr": 5, "code": "CHANGE_ME", "label": "Box 5", "available": true},
-      {"nr": 6, "code": "CHANGE_ME", "label": "Box 6", "available": true},
-      {"nr": 7, "code": "CHANGE_ME", "label": "Box 7", "available": true},
-      {"nr": 8, "code": "CHANGE_ME", "label": "Box 8", "available": true},
-      {"nr": 9, "code": "CHANGE_ME", "label": "Box 9", "available": true},
-      {"nr": 10, "code": "CHANGE_ME", "label": "Box 10", "available": true},
-      {"nr": 11, "code": "CHANGE_ME", "label": "Box 11", "available": true},
-      {"nr": 12, "code": "CHANGE_ME", "label": "Box 12", "available": true},
-      {"nr": 13, "code": "CHANGE_ME", "label": "Box 13", "available": true},
-      {"nr": 14, "code": "CHANGE_ME", "label": "Box 14", "available": true},
-      {"nr": 15, "code": "CHANGE_ME", "label": "Box 15", "available": true},
-      {"nr": 16, "code": "CHANGE_ME", "label": "Box 16", "available": true},
-      {"nr": 17, "code": "CHANGE_ME", "label": "Box 17", "available": true},
-      {"nr": 18, "code": "CHANGE_ME", "label": "Box 18", "available": true},
-      {"nr": 19, "code": "CHANGE_ME", "label": "Box 19", "available": true},
-      {"nr": 20, "code": "CHANGE_ME", "label": "Box 20", "available": true},
-      {"nr": 21, "code": "CHANGE_ME", "label": "Box 21", "available": true},
-      {"nr": 22, "code": "CHANGE_ME", "label": "Box 22", "available": true},
-      {"nr": 23, "code": "CHANGE_ME", "label": "Box 23", "available": true},
-      {"nr": 24, "code": "CHANGE_ME", "label": "Box 24", "available": true},
-      {"nr": 25, "code": "CHANGE_ME", "label": "Box 25", "available": true},
-      {"nr": 26, "code": "CHANGE_ME", "label": "Box 26", "available": true},
-      {"nr": 27, "code": "CHANGE_ME", "label": "Box 27", "available": true},
-      {"nr": 28, "code": "CHANGE_ME", "label": "Box 28", "available": true},
-      {"nr": 29, "code": "CHANGE_ME", "label": "Box 29", "available": true},
-      {"nr": 30, "code": "CHANGE_ME", "label": "Box 30", "available": true},
-      {"nr": 31, "code": "CHANGE_ME", "label": "Box 31", "available": true},
-      {"nr": 32, "code": "CHANGE_ME", "label": "Box 32", "available": true},
-      {"nr": 33, "code": "CHANGE_ME", "label": "Box 33", "available": true},
-      {"nr": 34, "code": "CHANGE_ME", "label": "Box 34", "available": true},
-      {"nr": 35, "code": "CHANGE_ME", "label": "Box 35", "available": true},
-      {"nr": 36, "code": "CHANGE_ME", "label": "Box 36", "available": true},
-      {"nr": 37, "code": "CHANGE_ME", "label": "Box 37", "available": true},
-      {"nr": 38, "code": "CHANGE_ME", "label": "Box 38", "available": true},
-      {"nr": 39, "code": "CHANGE_ME", "label": "Box 39", "available": true},
-      {"nr": 40, "code": "CHANGE_ME", "label": "Box 40", "available": true},
-      {"nr": 41, "code": "CHANGE_ME", "label": "Box 41", "available": true},
-      {"nr": 42, "code": "CHANGE_ME", "label": "Box 42", "available": true},
-      {"nr": 43, "code": "CHANGE_ME", "label": "Box 43", "available": true},
-      {"nr": 44, "code": "CHANGE_ME", "label": "Box 44", "available": true},
-      {"nr": 45, "code": "CHANGE_ME", "label": "Box 45", "available": true},
-      {"nr": 46, "code": "CHANGE_ME", "label": "Box 46", "available": true},
-      {"nr": 47, "code": "CHANGE_ME", "label": "Box 47", "available": true},
-      {"nr": 48, "code": "CHANGE_ME", "label": "Box 48", "available": true},
-      {"nr": 49, "code": "CHANGE_ME", "label": "Box 49", "available": true},
-      {"nr": 50, "code": "CHANGE_ME", "label": "Box 50", "available": true}
-    ]
-  },
-
-  "sonderbefehle": {
-    "enabled": false,
-    "befehle": [
-      {"code": "CHANGE_ME", "label": "Gleichzeitig-Modus", "description": "Batteriefeuer simultan"},
-      {"code": "CHANGE_ME", "label": "Sequenz-Modus", "description": "Batteriefeuer mit Delay"}
-    ]
+    "erste_box_nr": 1001,
+    "anzahl": 50
   },
 
   "audio": {
