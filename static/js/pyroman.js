@@ -6,6 +6,7 @@
  * (c) Dr. Ralf Korell, 2025/26
  * 
  * Erstellt: 07.12.2025, 21:00
+ * Modified: 08.12.2025, 12:35 - Bugfix: Gefeuerte Kanäle werden jetzt gesperrt (disabled)
  */
 
 // =============================================================================
@@ -211,7 +212,7 @@ function updateFireButtons() {
         
         btn.classList.toggle('ready', !fired);
         btn.classList.toggle('fired', fired);
-        btn.disabled = !PyroMan.fireEnabled || !PyroMan.authorized;
+        btn.disabled = !PyroMan.fireEnabled || !PyroMan.authorized || fired;
     });
     
     // Direktzünder Buttons
@@ -230,7 +231,7 @@ function updateFireButtons() {
             btn.classList.add('ready');
         }
         
-        btn.disabled = !PyroMan.fireEnabled || !PyroMan.authorized || !available;
+        btn.disabled = !PyroMan.fireEnabled || !PyroMan.authorized || !available || fired;
     });
 }
 
