@@ -1,11 +1,12 @@
 <!--
     direktzuender.html - PyroMan Direktzünder Interface
     
-    Grid mit 50 Buttons
+    Vertikale Liste
     
     (c) Dr. Ralf Korell, 2025/26
     
     Erstellt: 07.12.2025, 21:00
+    Modified: 08.12.2025, 15:45 - Vertikales Layout
 -->
 {% extends "base.html" %}
 
@@ -16,33 +17,47 @@
     <div class="section-header">
         <h2 class="section-title">Direktzünder</h2>
         <div class="section-divider"></div>
-        <span class="text-muted">{{ direktzuender_list | length }} Stück</span>
+        <span class="section-count">{{ direktzuender_list | length }} Stück</span>
     </div>
     
-    <div class="card">
-        <div class="direktzuender-grid">
-            {% for dz in direktzuender_list %}
-            <button class="fire-btn direktzuender-btn {{ 'ready' if dz.available else 'unavailable' }}" 
-                    data-direktzuender="{{ dz.nr }}"
-                    data-available="{{ 'true' if dz.available else 'false' }}">
+    <div class="fire-list">
+        {% for dz in direktzuender_list %}
+        <div class="fire-item {{ 'ready' if dz.available else 'unavailable' }}" 
+             data-direktzuender="{{ dz.nr }}"
+             data-available="{{ 'true' if dz.available else 'false' }}">
+            <div class="fire-item-icon">
                 {% if dz.available %}
                 <img src="{{ url_for('static', filename='images/fw_off.png') }}" 
                      alt="Rakete"
+                     class="icon-ready"
+                     onerror="this.style.display='none'">
+                <img src="{{ url_for('static', filename='images/pyrologo.png') }}" 
+                     alt="Gefeuert"
+                     class="icon-fired hidden"
                      onerror="this.style.display='none'">
                 {% else %}
                 <img src="{{ url_for('static', filename='images/fw_n_a.png') }}" 
                      alt="N/A"
                      onerror="this.style.display='none'">
                 {% endif %}
-                <span class="nr">{{ dz.nr }}</span>
-            </button>
-            {% endfor %}
+            </div>
+            <div class="fire-item-content">
+                <span class="fire-item-label">Direktzünder {{ dz.nr }}</span>
+                <span class="fire-item-status">
+                    {% if dz.available %}
+                    Bereit
+                    {% else %}
+                    Nicht verfügbar
+                    {% endif %}
+                </span>
+            </div>
         </div>
+        {% endfor %}
     </div>
     
     <div class="mt-lg text-center text-muted">
         <p>
-            🟢 Verfügbar &nbsp;&nbsp;
+            🟢 Bereit &nbsp;&nbsp;
             🔴 Abgefeuert &nbsp;&nbsp;
             🔧 Nicht verfügbar (siehe Wartung)
         </p>

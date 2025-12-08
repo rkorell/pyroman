@@ -3,6 +3,7 @@
   "_copyright": "(c) Dr. Ralf Korell, 2025/26",
   "_instructions": "Kopieren nach config.json und anpassen!",
   "_created": "07.12.2025, 15:45",
+  "_modified": "08.12.2025, 15:45 - UI Parameter scroll_safe_zone hinzugefügt",
 
   "system": {
     "name": "PyroMan",
@@ -45,5 +46,9 @@
   "audio": {
     "explosion_sound": "static/sounds/explosion.mp3",
     "enabled_default": true
+  },
+
+  "ui": {
+    "scroll_safe_zone": 50
   }
 }

@@ -1,11 +1,12 @@
 <!--
     koffer.html - PyroMan Funkkoffer Interface
     
-    Dropdown zur Kofferauswahl, 8 Kanäle + 2 Batteriefeuer
+    Vertikale Liste: 8 Kanäle + 2 Gruppenzünder (abgesetzt)
     
     (c) Dr. Ralf Korell, 2025/26
     
     Erstellt: 07.12.2025, 21:00
+    Modified: 08.12.2025, 15:45 - Vertikales Layout, Gruppenzünder abgesetzt
 -->
 {% extends "base.html" %}
 
@@ -14,67 +15,100 @@
 {% block content %}
 <div class="fade-in">
     <!-- Koffer Auswahl -->
-    <div class="card mb-lg">
-        <div class="koffer-selector">
-            <label for="koffer-select" style="font-weight: 600; font-size: 1.1rem;">
-                Aktiver Koffer:
-            </label>
-            <select id="koffer-select" class="koffer-dropdown">
-                {% for koffer in koffer_list %}
-                <option value="{{ koffer.id }}" {{ 'selected' if koffer.id == current_koffer.id else '' }}>
-                    {{ koffer.name }}
-                </option>
-                {% endfor %}
-            </select>
-        </div>
+    <div class="koffer-selector">
+        <label for="koffer-select">Aktiver Koffer:</label>
+        <select id="koffer-select" class="koffer-dropdown">
+            {% for koffer in koffer_list %}
+            <option value="{{ koffer.id }}" {{ 'selected' if koffer.id == current_koffer.id else '' }}>
+                {{ koffer.name }}
+            </option>
+            {% endfor %}
+        </select>
     </div>
     
     <!-- Kanäle 1-8 -->
     <div class="section-header">
-        <h2 class="section-title">Kanäle</h2>
+        <h2 class="section-title">Einzelfeuer</h2>
         <div class="section-divider"></div>
+        <span class="section-count">8 Kanäle</span>
     </div>
     
-    <div class="card mb-lg">
-        <div class="button-grid button-grid-4">
-            {% for kanal_nr in range(1, 9) %}
-            <button class="fire-btn ready" 
-                    data-koffer="{{ current_koffer.id }}" 
-                    data-kanal="{{ kanal_nr }}">
+    <div class="fire-list">
+        {% for kanal_nr in range(1, 9) %}
+        <div class="fire-item ready" 
+             data-koffer="{{ current_koffer.id }}" 
+             data-kanal="{{ kanal_nr }}">
+            <div class="fire-item-icon">
                 <img src="{{ url_for('static', filename='images/zuenderklein.png') }}" 
                      alt="Zünder"
+                     class="icon-ready"
                      onerror="this.style.display='none'">
-                <span class="label">Kanal {{ kanal_nr }}</span>
-            </button>
-            {% endfor %}
+                <img src="{{ url_for('static', filename='images/pyrologo.png') }}" 
+                     alt="Gefeuert"
+                     class="icon-fired hidden"
+                     onerror="this.style.display='none'">
+            </div>
+            <div class="fire-item-content">
+                <span class="fire-item-label">Kanal {{ kanal_nr }}</span>
+                <span class="fire-item-status">Bereit</span>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    
+    <!-- Gruppenzünder (Batteriefeuer) -->
+    <div class="group-separator">
+        <div class="section-header">
+            <h2 class="section-title">🔥 Gruppenfeuer</h2>
+            <div class="section-divider"></div>
         </div>
     </div>
     
-    <!-- Batteriefeuer -->
-    <div class="section-header">
-        <h2 class="section-title">Batteriefeuer</h2>
-        <div class="section-divider"></div>
+    <div class="fire-list">
+        <div class="fire-item ready" 
+             data-koffer="{{ current_koffer.id }}" 
+             data-kanal="9">
+            <div class="fire-item-icon">
+                <img src="{{ url_for('static', filename='images/zuenderklein.png') }}" 
+                     alt="Zünder"
+                     class="icon-ready"
+                     onerror="this.style.display='none'">
+                <img src="{{ url_for('static', filename='images/pyrologo.png') }}" 
+                     alt="Gefeuert"
+                     class="icon-fired hidden"
+                     onerror="this.style.display='none'">
+            </div>
+            <div class="fire-item-content">
+                <span class="fire-item-label">Batterie 1-4</span>
+                <span class="fire-item-status">Bereit</span>
+            </div>
+        </div>
+        
+        <div class="fire-item ready" 
+             data-koffer="{{ current_koffer.id }}" 
+             data-kanal="10">
+            <div class="fire-item-icon">
+                <img src="{{ url_for('static', filename='images/zuenderklein.png') }}" 
+                     alt="Zünder"
+                     class="icon-ready"
+                     onerror="this.style.display='none'">
+                <img src="{{ url_for('static', filename='images/pyrologo.png') }}" 
+                     alt="Gefeuert"
+                     class="icon-fired hidden"
+                     onerror="this.style.display='none'">
+            </div>
+            <div class="fire-item-content">
+                <span class="fire-item-label">Batterie 5-8</span>
+                <span class="fire-item-status">Bereit</span>
+            </div>
+        </div>
     </div>
     
-    <div class="card">
-        <div class="button-grid button-grid-2">
-            <button class="fire-btn ready" 
-                    data-koffer="{{ current_koffer.id }}" 
-                    data-kanal="9">
-                <img src="{{ url_for('static', filename='images/zuenderklein.png') }}" 
-                     alt="Zünder"
-                     onerror="this.style.display='none'">
-                <span class="label">Batterie 1-4</span>
-            </button>
-            <button class="fire-btn ready" 
-                    data-koffer="{{ current_koffer.id }}" 
-                    data-kanal="10">
-                <img src="{{ url_for('static', filename='images/zuenderklein.png') }}" 
-                     alt="Zünder"
-                     onerror="this.style.display='none'">
-                <span class="label">Batterie 5-8</span>
-            </button>
-        </div>
+    <div class="mt-lg text-center text-muted">
+        <p>
+            🟢 Bereit &nbsp;&nbsp;
+            🔴 Abgefeuert
+        </p>
     </div>
 </div>
 {% endblock %}

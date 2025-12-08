@@ -9,6 +9,8 @@ Hauptanwendung mit Routes, WebSocket, Templates.
 
 Erstellt: 07.12.2025, 21:00
 Modified: 08.12.2025, 14:30 - Modularisierung: state, fire_control, direktzuender_wartung ausgelagert
+Modified: 08.12.2025, 15:45 - scroll_safe_zone an Templates übergeben
+Modified: 08.12.2025, 17:00 - Neue Route /wetter
 """
 
 import json
@@ -32,6 +34,18 @@ sock = Sock(app)
 
 # Logger
 logger = config.get_logger(__name__)
+
+# =============================================================================
+# Template Context
+# =============================================================================
+
+@app.context_processor
+def inject_ui_config():
+    """Injiziert UI-Konfiguration in alle Templates."""
+    ui_config = config.get_ui_config()
+    return {
+        'scroll_safe_zone': ui_config.get('scroll_safe_zone', 50)
+    }
 
 # =============================================================================
 # WebSocket Clients
@@ -267,6 +281,15 @@ def wartung_page():
     return render_template('wartung.html',
                            active_page='wartung',
                            direktzuender_list=direktzuender_wartung.get_direktzuender_list())
+
+@app.route('/wetter')
+def wetter_page():
+    """Wetter-Seite."""
+    if not config.is_valid():
+        return render_template('error.html', errors=config.get_startup_errors())
+    
+    return render_template('wetter.html',
+                           active_page='wetter')
 
 # =============================================================================
 # API Routes

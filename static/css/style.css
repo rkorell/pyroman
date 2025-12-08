@@ -1,11 +1,13 @@
 /*
  * style.css - PyroMan Stylesheet
  * 
- * Fancy Dark-Mode Design mit Cards, Transitions, Touch-optimiert
+ * Mobile-First Design mit vertikalen Listen, Touch-optimiert
  * 
  * (c) Dr. Ralf Korell, 2025/26
  * 
  * Erstellt: 07.12.2025, 21:00
+ * Modified: 08.12.2025, 15:45 - Mobile-First, vertikale Listen, Fire-Master Button, Scroll-Safe-Zone
+ * Modified: 08.12.2025, 17:00 - Zweizeiliger Header, Nav gleichmäßig, Fire-Master 2/3 + Reset 1/3, Auth-Flow
  */
 
 /* =============================================================================
@@ -18,6 +20,7 @@
     --bg-secondary: #12121a;
     --bg-card: #1a1a25;
     --bg-card-hover: #222230;
+    --bg-card-alt: #1e1e2a;
     
     --text-primary: #f0f0f5;
     --text-secondary: #a0a0b0;
@@ -60,7 +63,7 @@
     --transition-normal: 0.25s ease;
     --transition-slow: 0.4s ease;
     
-    /* Scroll Safety */
+    /* Scroll Safety - wird per inline style überschrieben */
     --scroll-safe-zone: 50px;
 }
 
@@ -70,6 +73,7 @@
     --bg-secondary: #e8e8ed;
     --bg-card: #ffffff;
     --bg-card-hover: #f0f0f5;
+    --bg-card-alt: #f8f8fc;
     
     --text-primary: #1a1a25;
     --text-secondary: #505060;
@@ -100,7 +104,6 @@ body {
     color: var(--text-primary);
     min-height: 100vh;
     line-height: 1.5;
-    padding-right: var(--scroll-safe-zone); /* Scroll-Sicherheitsbereich */
 }
 
 a {
@@ -118,9 +121,10 @@ a:hover {
    ============================================================================= */
 
 .container {
-    max-width: 1200px;
+    max-width: 800px;
     margin: 0 auto;
     padding: var(--spacing-md);
+    padding-right: calc(var(--spacing-md) + var(--scroll-safe-zone));
 }
 
 .page-wrapper {
@@ -131,29 +135,40 @@ a:hover {
 
 .main-content {
     flex: 1;
-    padding: var(--spacing-lg) var(--spacing-md);
+    padding: var(--spacing-md) 0;
+}
+
+/* Scroll-Safe-Zone Indicator */
+.scroll-safe-zone {
+    position: fixed;
+    top: 0;
+    right: 0;
+    width: var(--scroll-safe-zone);
+    height: 100vh;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.02));
+    pointer-events: none;
+    z-index: 50;
 }
 
 /* =============================================================================
-   Header
+   Header - Zweizeilig
    ============================================================================= */
 
 .header {
     background: var(--bg-secondary);
     border-bottom: 1px solid var(--border-color);
-    padding: var(--spacing-md) var(--spacing-lg);
     position: sticky;
     top: 0;
     z-index: 100;
     box-shadow: 0 2px 10px var(--shadow-color);
 }
 
-.header-content {
+.header-row-1 {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    max-width: 1200px;
-    margin: 0 auto;
+    padding: var(--spacing-sm) var(--spacing-md);
+    padding-right: calc(var(--spacing-md) + var(--scroll-safe-zone));
 }
 
 .logo {
@@ -163,12 +178,12 @@ a:hover {
 }
 
 .logo img {
-    height: 40px;
+    height: 32px;
     width: auto;
 }
 
 .logo-text {
-    font-size: 1.5rem;
+    font-size: 1.25rem;
     font-weight: 700;
     background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
     -webkit-background-clip: text;
@@ -176,65 +191,97 @@ a:hover {
     background-clip: text;
 }
 
+.header-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
 /* =============================================================================
-   Navigation
+   Navigation - Zeile 2
    ============================================================================= */
 
-.nav {
+.nav-row {
     display: flex;
-    gap: var(--spacing-sm);
+    border-top: 1px solid var(--border-color);
+    padding-right: var(--scroll-safe-zone);
 }
 
-.nav-link {
-    padding: var(--spacing-sm) var(--spacing-md);
-    border-radius: var(--radius-md);
+.nav-row .nav-link {
+    flex: 1;
+    text-align: center;
+    padding: var(--spacing-sm) var(--spacing-xs);
     color: var(--text-secondary);
     font-weight: 500;
+    font-size: 0.9rem;
     transition: all var(--transition-fast);
+    border-right: 1px solid var(--border-color);
 }
 
-.nav-link:hover {
+.nav-row .nav-link:last-child {
+    border-right: none;
+}
+
+.nav-row .nav-link:hover {
     background: var(--bg-card);
     color: var(--text-primary);
 }
 
-.nav-link.active {
+.nav-row .nav-link.active {
     background: var(--accent-primary);
     color: white;
 }
 
 /* =============================================================================
-   Status Banner
+   Auth Section (nur wenn nicht autorisiert)
    ============================================================================= */
 
-.status-banner {
-    padding: var(--spacing-sm) var(--spacing-md);
-    text-align: center;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    font-size: 0.9rem;
-}
-
-.status-banner.danger {
+.auth-section {
     background: var(--danger-dark);
+    padding: var(--spacing-lg) var(--spacing-md);
+    padding-right: calc(var(--spacing-md) + var(--scroll-safe-zone));
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--spacing-md);
+}
+
+.auth-message {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
     color: var(--danger);
-    animation: pulse-danger 1.5s ease-in-out infinite;
+    font-weight: 600;
+    font-size: 1rem;
 }
 
-.status-banner.success {
-    background: var(--success-dark);
-    color: var(--success);
+.auth-icon {
+    font-size: 1.2rem;
 }
 
-.status-banner.warning {
-    background: rgba(255, 193, 7, 0.2);
-    color: var(--warning);
+.btn-large {
+    padding: var(--spacing-md) var(--spacing-xl);
+    font-size: 1.1rem;
+    min-width: 200px;
 }
 
-@keyframes pulse-danger {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.6; }
+/* =============================================================================
+   Controls Row (Fire-Master + Reset)
+   ============================================================================= */
+
+.controls-row {
+    display: flex;
+    gap: var(--spacing-sm);
+    margin-bottom: var(--spacing-lg);
+}
+
+.controls-row .fire-master-btn {
+    flex: 2;
+}
+
+.controls-row .btn-reset {
+    flex: 1;
+    min-height: 70px;
+    font-size: 0.9rem;
 }
 
 /* =============================================================================
@@ -245,14 +292,11 @@ a:hover {
     background: var(--bg-card);
     border: 1px solid var(--border-color);
     border-radius: var(--radius-lg);
-    padding: var(--spacing-lg);
-    box-shadow: 0 4px 20px var(--shadow-color);
+    padding: var(--spacing-md);
+    box-shadow: 
+        0 4px 6px rgba(0, 0, 0, 0.3),
+        0 10px 20px rgba(0, 0, 0, 0.2);
     transition: all var(--transition-normal);
-}
-
-.card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 30px var(--shadow-color);
 }
 
 .card-header {
@@ -265,7 +309,7 @@ a:hover {
 }
 
 .card-title {
-    font-size: 1.25rem;
+    font-size: 1.1rem;
     font-weight: 600;
 }
 
@@ -278,15 +322,16 @@ a:hover {
     align-items: center;
     justify-content: center;
     gap: var(--spacing-sm);
-    padding: var(--spacing-sm) var(--spacing-lg);
+    padding: var(--spacing-sm) var(--spacing-md);
     border: none;
     border-radius: var(--radius-md);
-    font-size: 1rem;
+    font-size: 0.9rem;
     font-weight: 600;
     cursor: pointer;
     transition: all var(--transition-fast);
     text-transform: uppercase;
     letter-spacing: 0.5px;
+    min-height: 44px;
 }
 
 .btn:active {
@@ -301,7 +346,6 @@ a:hover {
 
 .btn-primary:hover {
     box-shadow: 0 6px 25px var(--accent-glow);
-    transform: translateY(-2px);
 }
 
 .btn-success {
@@ -328,141 +372,233 @@ a:hover {
 }
 
 /* =============================================================================
-   Fire Buttons (Zündknöpfe)
+   Fire Master Button
    ============================================================================= */
 
-.fire-btn {
-    position: relative;
+.fire-master-btn {
     width: 100%;
-    aspect-ratio: 1;
+    padding: var(--spacing-lg);
     border: none;
     border-radius: var(--radius-lg);
+    font-size: 1.1rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 2px;
     cursor: pointer;
-    overflow: hidden;
     transition: all var(--transition-normal);
+    min-height: 70px;
     display: flex;
-    flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: var(--spacing-sm);
-    font-weight: 600;
-    font-size: 1rem;
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+    gap: var(--spacing-md);
 }
 
-.fire-btn img {
-    width: 50%;
-    height: auto;
-    max-height: 60%;
+.fire-master-btn.inactive {
+    background: linear-gradient(145deg, #3a3a45, #2a2a35);
+    color: var(--text-secondary);
+    border: 2px solid var(--border-color);
+    box-shadow: 
+        0 4px 6px rgba(0, 0, 0, 0.3),
+        inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+.fire-master-btn.inactive:active {
+    transform: scale(0.98);
+}
+
+.fire-master-btn.active {
+    background: linear-gradient(145deg, var(--success), #00a844);
+    color: white;
+    border: 2px solid var(--success);
+    box-shadow: 
+        0 0 20px var(--success-glow),
+        0 0 40px var(--success-glow),
+        0 4px 15px rgba(0, 0, 0, 0.3);
+    animation: pulse-glow 2s ease-in-out infinite;
+}
+
+.fire-master-btn.active:active {
+    transform: scale(0.98);
+}
+
+@keyframes pulse-glow {
+    0%, 100% { 
+        box-shadow: 
+            0 0 20px var(--success-glow),
+            0 0 40px var(--success-glow),
+            0 4px 15px rgba(0, 0, 0, 0.3);
+    }
+    50% { 
+        box-shadow: 
+            0 0 30px var(--success-glow),
+            0 0 60px var(--success-glow),
+            0 4px 15px rgba(0, 0, 0, 0.3);
+    }
+}
+
+.fire-master-icon {
+    font-size: 1.3rem;
+}
+
+/* =============================================================================
+   Fire Items (Zündknöpfe) - Vertikale Liste
+   ============================================================================= */
+
+.fire-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
+}
+
+.fire-item {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+    padding: var(--spacing-md);
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    min-height: 70px;
+    box-shadow: 
+        0 2px 4px rgba(0, 0, 0, 0.2),
+        0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.fire-item:nth-child(even) {
+    background: var(--bg-card-alt);
+}
+
+.fire-item:active {
+    transform: scale(0.98);
+}
+
+.fire-item.ready {
+    border-left: 4px solid var(--success);
+}
+
+.fire-item.ready:active {
+    background: var(--success-dark);
+}
+
+.fire-item.fired {
+    border-left: 4px solid var(--danger);
+    background: var(--danger-dark);
+    cursor: default;
+}
+
+.fire-item.fired:active {
+    transform: none;
+}
+
+.fire-item.unavailable {
+    border-left: 4px solid var(--text-muted);
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.fire-item.unavailable:active {
+    transform: none;
+}
+
+.fire-item.disabled {
+    opacity: 0.8;
+    cursor: not-allowed;
+}
+
+.fire-item.disabled:active {
+    transform: none;
+}
+
+.fire-item-icon {
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.fire-item-icon img {
+    max-width: 100%;
+    max-height: 100%;
     object-fit: contain;
     filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
 }
 
-.fire-btn .label {
-    color: white;
+.fire-item-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs);
 }
 
-/* Feuerbereit (Grün) */
-.fire-btn.ready {
-    background: linear-gradient(145deg, #004d00, var(--success-dark));
-    border: 2px solid var(--success);
-    box-shadow: 0 4px 20px var(--success-glow),
-                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+.fire-item-label {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text-primary);
 }
 
-.fire-btn.ready:hover {
-    transform: scale(1.03);
-    box-shadow: 0 8px 30px var(--success-glow),
-                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+.fire-item-status {
+    font-size: 0.85rem;
+    color: var(--text-muted);
 }
 
-.fire-btn.ready:active {
-    transform: scale(0.97);
+.fire-item.ready .fire-item-status {
+    color: var(--success);
 }
 
-/* Abgefeuert (Rot) */
-.fire-btn.fired {
-    background: linear-gradient(145deg, #8b0000, var(--danger-dark));
-    border: 2px solid var(--danger);
-    box-shadow: 0 4px 20px var(--danger-glow),
-                inset 0 1px 0 rgba(255, 255, 255, 0.1);
-    cursor: default;
-}
-
-/* Nicht verfügbar */
-.fire-btn.unavailable {
-    background: linear-gradient(145deg, #2a2a35, #1a1a22);
-    border: 2px solid var(--border-color);
-    cursor: not-allowed;
-    opacity: 0.6;
-}
-
-/* Deaktiviert (Feuer aus) */
-.fire-btn:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-    transform: none !important;
+.fire-item.fired .fire-item-status {
+    color: var(--danger);
 }
 
 /* =============================================================================
-   Button Grid (für Kanäle)
+   Section Headers
    ============================================================================= */
 
-.button-grid {
-    display: grid;
+.section-header {
+    display: flex;
+    align-items: center;
     gap: var(--spacing-md);
+    margin-bottom: var(--spacing-md);
+    margin-top: var(--spacing-lg);
 }
 
-.button-grid-4 {
-    grid-template-columns: repeat(4, 1fr);
+.section-header:first-child {
+    margin-top: 0;
 }
 
-.button-grid-5 {
-    grid-template-columns: repeat(5, 1fr);
-}
-
-.button-grid-2 {
-    grid-template-columns: repeat(2, 1fr);
-}
-
-@media (max-width: 768px) {
-    .button-grid-4,
-    .button-grid-5 {
-        grid-template-columns: repeat(2, 1fr);
-    }
-}
-
-/* =============================================================================
-   Direktzünder Grid (50 Buttons)
-   ============================================================================= */
-
-.direktzuender-grid {
-    display: grid;
-    grid-template-columns: repeat(10, 1fr);
-    gap: var(--spacing-sm);
-}
-
-@media (max-width: 1024px) {
-    .direktzuender-grid {
-        grid-template-columns: repeat(5, 1fr);
-    }
-}
-
-@media (max-width: 600px) {
-    .direktzuender-grid {
-        grid-template-columns: repeat(4, 1fr);
-    }
-}
-
-.direktzuender-btn {
-    aspect-ratio: 1;
-    font-size: 0.8rem;
-    padding: var(--spacing-xs);
-}
-
-.direktzuender-btn .nr {
+.section-title {
     font-size: 1.2rem;
     font-weight: 700;
+    white-space: nowrap;
+}
+
+.section-divider {
+    flex: 1;
+    height: 2px;
+    background: linear-gradient(90deg, var(--border-color), transparent);
+}
+
+.section-count {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+}
+
+/* =============================================================================
+   Gruppenzünder Separator
+   ============================================================================= */
+
+.group-separator {
+    margin: var(--spacing-xl) 0;
+    padding: var(--spacing-md) 0;
+    border-top: 3px solid var(--accent-primary);
+    border-bottom: 1px solid var(--border-color);
+}
+
+.group-separator .section-title {
+    color: var(--accent-primary);
 }
 
 /* =============================================================================
@@ -471,27 +607,75 @@ a:hover {
 
 .koffer-selector {
     display: flex;
-    align-items: center;
-    gap: var(--spacing-md);
-    flex-wrap: wrap;
+    flex-direction: column;
+    gap: var(--spacing-sm);
+    margin-bottom: var(--spacing-lg);
+}
+
+.koffer-selector label {
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: var(--text-secondary);
 }
 
 .koffer-dropdown {
-    padding: var(--spacing-sm) var(--spacing-md);
+    padding: var(--spacing-md);
     font-size: 1rem;
     background: var(--bg-card);
     color: var(--text-primary);
     border: 2px solid var(--border-color);
     border-radius: var(--radius-md);
     cursor: pointer;
-    min-width: 200px;
+    min-height: 50px;
     transition: all var(--transition-fast);
 }
 
-.koffer-dropdown:hover,
 .koffer-dropdown:focus {
     border-color: var(--accent-primary);
     outline: none;
+}
+
+/* =============================================================================
+   Wartung Liste
+   ============================================================================= */
+
+.wartung-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
+}
+
+.wartung-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--spacing-md);
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    transition: all var(--transition-fast);
+    min-height: 60px;
+}
+
+.wartung-item:nth-child(even) {
+    background: var(--bg-card-alt);
+}
+
+.wartung-item.disabled {
+    opacity: 0.6;
+    background: var(--bg-secondary);
+}
+
+.wartung-item-label {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    font-weight: 500;
+}
+
+.wartung-item-label img {
+    height: 28px;
+    width: auto;
 }
 
 /* =============================================================================
@@ -506,13 +690,14 @@ a:hover {
 
 .toggle {
     position: relative;
-    width: 60px;
+    width: 56px;
     height: 32px;
-    background: var(--bg-card);
+    background: var(--bg-secondary);
     border: 2px solid var(--border-color);
     border-radius: 16px;
     cursor: pointer;
     transition: all var(--transition-fast);
+    flex-shrink: 0;
 }
 
 .toggle::after {
@@ -533,108 +718,30 @@ a:hover {
 }
 
 .toggle.active::after {
-    left: 31px;
+    left: 27px;
     background: var(--success);
 }
 
 .toggle-label {
     font-weight: 500;
     color: var(--text-secondary);
+    font-size: 0.9rem;
+    min-width: 50px;
 }
 
 /* =============================================================================
-   Fire Master Switch
+   Wetter Seite
    ============================================================================= */
 
-.fire-master {
-    display: flex;
-    align-items: center;
-    gap: var(--spacing-lg);
-    padding: var(--spacing-md) var(--spacing-lg);
-    background: var(--bg-card);
-    border-radius: var(--radius-lg);
-    border: 2px solid var(--border-color);
+.wetter-section {
+    margin-bottom: var(--spacing-xl);
 }
 
-.fire-master.active {
-    border-color: var(--success);
-    box-shadow: 0 0 20px var(--success-glow);
-}
-
-.fire-master.inactive {
-    border-color: var(--danger);
-    box-shadow: 0 0 20px var(--danger-glow);
-}
-
-.fire-master-label {
-    font-size: 1.1rem;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-}
-
-.fire-master.active .fire-master-label {
-    color: var(--success);
-}
-
-.fire-master.inactive .fire-master-label {
-    color: var(--danger);
-}
-
-/* =============================================================================
-   Wartung Liste
-   ============================================================================= */
-
-.wartung-list {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-    gap: var(--spacing-md);
-}
-
-.wartung-item {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: var(--spacing-md);
-    background: var(--bg-card);
-    border: 1px solid var(--border-color);
-    border-radius: var(--radius-md);
-    transition: all var(--transition-fast);
-}
-
-.wartung-item:hover {
-    border-color: var(--accent-primary);
-}
-
-.wartung-item.disabled {
-    opacity: 0.6;
-    background: var(--bg-secondary);
-}
-
-.wartung-item-label {
-    font-weight: 500;
-}
-
-/* =============================================================================
-   Section Headers
-   ============================================================================= */
-
-.section-header {
-    display: flex;
-    align-items: center;
-    gap: var(--spacing-md);
-    margin-bottom: var(--spacing-lg);
-}
-
-.section-title {
-    font-size: 1.5rem;
-    font-weight: 700;
-}
-
-.section-divider {
-    flex: 1;
-    height: 2px;
-    background: linear-gradient(90deg, var(--border-color), transparent);
+.wetter-placeholder {
+    padding: var(--spacing-xl);
+    text-align: center;
+    color: var(--text-muted);
+    font-style: italic;
 }
 
 /* =============================================================================
@@ -645,9 +752,10 @@ a:hover {
     background: var(--bg-secondary);
     border-top: 1px solid var(--border-color);
     padding: var(--spacing-md);
+    padding-right: calc(var(--spacing-md) + var(--scroll-safe-zone));
     text-align: center;
     color: var(--text-muted);
-    font-size: 0.85rem;
+    font-size: 0.8rem;
 }
 
 /* =============================================================================
@@ -665,13 +773,13 @@ a:hover {
 }
 
 .error-icon {
-    font-size: 5rem;
+    font-size: 4rem;
     color: var(--danger);
     margin-bottom: var(--spacing-lg);
 }
 
 .error-title {
-    font-size: 2rem;
+    font-size: 1.5rem;
     color: var(--danger);
     margin-bottom: var(--spacing-md);
 }
@@ -679,6 +787,8 @@ a:hover {
 .error-list {
     list-style: none;
     margin: var(--spacing-lg) 0;
+    width: 100%;
+    max-width: 500px;
 }
 
 .error-list li {
@@ -704,23 +814,26 @@ a:hover {
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    font-size: 1.2rem;
+    font-size: 1.1rem;
     transition: all var(--transition-fast);
 }
 
 .theme-toggle:hover {
     border-color: var(--accent-primary);
-    transform: rotate(15deg);
+}
+
+.theme-toggle:active {
+    transform: scale(0.95);
 }
 
 /* =============================================================================
-   Auth Modal (Fake Password)
+   Auth Modal
    ============================================================================= */
 
 .auth-overlay {
     position: fixed;
     inset: 0;
-    background: rgba(0, 0, 0, 0.8);
+    background: rgba(0, 0, 0, 0.85);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -728,6 +841,7 @@ a:hover {
     opacity: 0;
     visibility: hidden;
     transition: all var(--transition-normal);
+    padding: var(--spacing-md);
 }
 
 .auth-overlay.visible {
@@ -741,8 +855,8 @@ a:hover {
     border-radius: var(--radius-xl);
     box-shadow: 0 20px 60px var(--shadow-color);
     text-align: center;
-    max-width: 400px;
-    width: 90%;
+    max-width: 350px;
+    width: 100%;
     transform: scale(0.9);
     transition: all var(--transition-normal);
 }
@@ -752,7 +866,7 @@ a:hover {
 }
 
 .auth-title {
-    font-size: 1.5rem;
+    font-size: 1.3rem;
     margin-bottom: var(--spacing-lg);
 }
 
@@ -780,6 +894,52 @@ a:hover {
 }
 
 /* =============================================================================
+   Toast Notifications
+   ============================================================================= */
+
+#toast-container {
+    position: fixed;
+    bottom: 20px;
+    right: calc(20px + var(--scroll-safe-zone));
+    z-index: 1001;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.toast {
+    padding: var(--spacing-sm) var(--spacing-md);
+    border-radius: var(--radius-md);
+    color: white;
+    font-weight: 500;
+    animation: slideIn var(--transition-normal) ease;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.toast-success {
+    background: var(--success);
+}
+
+.toast-danger {
+    background: var(--danger);
+}
+
+.toast-info {
+    background: var(--accent-primary);
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateX(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+/* =============================================================================
    Animations
    ============================================================================= */
 
@@ -790,16 +950,6 @@ a:hover {
 
 .fade-in {
     animation: fadeIn var(--transition-normal) ease forwards;
-}
-
-@keyframes fireEffect {
-    0% { box-shadow: 0 0 20px var(--danger-glow); }
-    50% { box-shadow: 0 0 40px var(--danger-glow), 0 0 60px var(--accent-glow); }
-    100% { box-shadow: 0 0 20px var(--danger-glow); }
-}
-
-.fire-animation {
-    animation: fireEffect 0.5s ease;
 }
 
 /* =============================================================================
@@ -821,3 +971,31 @@ a:hover {
 
 .hidden { display: none !important; }
 .visible { display: block !important; }
+
+/* =============================================================================
+   Desktop Anpassungen (optional)
+   ============================================================================= */
+
+@media (min-width: 768px) {
+    .container {
+        padding: var(--spacing-lg);
+        padding-right: calc(var(--spacing-lg) + var(--scroll-safe-zone));
+    }
+    
+    .header-row-1 {
+        padding-right: calc(var(--spacing-lg) + var(--scroll-safe-zone));
+    }
+    
+    .fire-item {
+        padding: var(--spacing-lg);
+    }
+    
+    .fire-item-icon {
+        width: 56px;
+        height: 56px;
+    }
+    
+    .fire-item-label {
+        font-size: 1.2rem;
+    }
+}

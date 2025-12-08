@@ -9,6 +9,7 @@ Stellt Getter-Funktionen für alle Module bereit.
 (c) Dr. Ralf Korell, 2025/26
 
 Erstellt: 07.12.2025, 15:45
+Modified: 08.12.2025, 15:45 - get_ui_config() hinzugefügt
 """
 
 import json
@@ -345,6 +346,14 @@ def get_audio_config():
     if not _config_valid:
         return {"explosion_sound": "", "enabled_default": False}
     return _config.get("audio", {}).copy()
+
+# --- UI ---
+
+def get_ui_config():
+    """Gibt UI Konfiguration zurück."""
+    if not _config_valid:
+        return {"scroll_safe_zone": 50}
+    return _config.get("ui", {"scroll_safe_zone": 50}).copy()
 
 # --- Logging ---
 

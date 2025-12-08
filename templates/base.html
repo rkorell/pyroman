@@ -5,6 +5,8 @@
     (c) Dr. Ralf Korell, 2025/26
     
     Erstellt: 07.12.2025, 21:00
+    Modified: 08.12.2025, 15:45 - Fire-Master Button, Scroll-Safe-Zone
+    Modified: 08.12.2025, 17:00 - Zweizeiliger Header, Auth-Flow, Navigation nur bei Auth
 -->
 <html lang="de">
 <head>
@@ -15,52 +17,63 @@
     <title>PyroMan - {% block title %}{% endblock %}</title>
     <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/rkicon.png') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        :root {
+            --scroll-safe-zone: {{ scroll_safe_zone }}px;
+        }
+    </style>
     {% block extra_css %}{% endblock %}
 </head>
 <body data-explosion-sound="{{ url_for('static', filename='sounds/explosion.mp3') }}">
     <div class="page-wrapper">
-        <!-- Header -->
+        <!-- Scroll Safe Zone Indicator -->
+        <div class="scroll-safe-zone"></div>
+        
+        <!-- Header Zeile 1: Logo + Sound/Theme -->
         <header class="header">
-            <div class="header-content">
+            <div class="header-row-1">
                 <div class="logo">
                     <img src="{{ url_for('static', filename='images/rkicon.png') }}" alt="RK" onerror="this.style.display='none'">
                     <span class="logo-text">PyroMan</span>
                 </div>
                 
-                <nav class="nav">
-                    <a href="{{ url_for('koffer_page') }}" class="nav-link {{ 'active' if active_page == 'koffer' else '' }}">Koffer</a>
-                    <a href="{{ url_for('direktzuender_page') }}" class="nav-link {{ 'active' if active_page == 'direktzuender' else '' }}">Direktzünder</a>
-                    <a href="{{ url_for('wartung_page') }}" class="nav-link {{ 'active' if active_page == 'wartung' else '' }}">Wartung</a>
-                </nav>
-                
-                <div class="header-actions" style="display: flex; gap: 0.5rem;">
+                <div class="header-actions">
                     <button id="audio-toggle" class="theme-toggle" title="Ton an/aus">🔊</button>
                     <button id="theme-toggle" class="theme-toggle" title="Theme wechseln">☀️</button>
                 </div>
             </div>
+            
+            <!-- Header Zeile 2: Navigation (nur wenn autorisiert) -->
+            <nav id="main-nav" class="nav-row hidden">
+                <a href="{{ url_for('koffer_page') }}" class="nav-link {{ 'active' if active_page == 'koffer' else '' }}">Koffer</a>
+                <a href="{{ url_for('direktzuender_page') }}" class="nav-link {{ 'active' if active_page == 'direktzuender' else '' }}">Direkt</a>
+                <a href="{{ url_for('wartung_page') }}" class="nav-link {{ 'active' if active_page == 'wartung' else '' }}">Wartung</a>
+                <a href="{{ url_for('wetter_page') }}" class="nav-link {{ 'active' if active_page == 'wetter' else '' }}">Wetter</a>
+            </nav>
         </header>
         
-        <!-- Auth Status Banner -->
-        <div id="auth-banner" class="status-banner danger">
-            🔒 Nicht autorisiert - Bitte anmelden
+        <!-- Auth-Bereich (nur wenn NICHT autorisiert) -->
+        <div id="auth-section" class="auth-section">
+            <div class="auth-message">
+                <span class="auth-icon">🔒</span>
+                <span class="auth-text">Nicht autorisiert - Bitte anmelden</span>
+            </div>
+            <button id="login-btn" class="btn btn-primary btn-large">
+                🔑 Anmelden
+            </button>
         </div>
         
         <!-- Main Content -->
         <main class="main-content">
             <div class="container">
-                <!-- Fire Master Switch -->
-                <div id="fire-master" class="fire-master inactive mb-lg">
-                    <div id="fire-master-toggle" class="toggle"></div>
-                    <span class="fire-master-label">Feuer</span>
-                    
-                    <div style="flex: 1;"></div>
-                    
-                    <button id="login-btn" class="btn btn-primary">
-                        🔑 Anmelden
+                <!-- Controls (nur wenn autorisiert) -->
+                <div id="controls-section" class="controls-row hidden">
+                    <button id="fire-master-btn" class="fire-master-btn inactive">
+                        <span class="fire-master-icon">🔒</span>
+                        <span class="fire-master-text">Feuer gesperrt</span>
                     </button>
-                    
-                    <button id="reset-all-btn" class="btn btn-outline">
-                        ↺ Alle Reset
+                    <button id="reset-all-btn" class="btn btn-outline btn-reset">
+                        ↺ Reset
                     </button>
                 </div>
                 
@@ -74,7 +87,7 @@
         </footer>
     </div>
     
-    <!-- Auth Modal (Fake Password) -->
+    <!-- Auth Modal -->
     <div id="auth-overlay" class="auth-overlay">
         <div class="auth-modal">
             <h2 class="auth-title">🔐 Anmeldung</h2>

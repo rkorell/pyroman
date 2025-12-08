@@ -1,11 +1,12 @@
 <!--
     wartung.html - PyroMan Direktzünder Wartung
     
-    Liste aller Direktzünder mit Enable/Disable Toggle
+    Vertikale Liste mit Enable/Disable Toggle
     
     (c) Dr. Ralf Korell, 2025/26
     
     Erstellt: 07.12.2025, 21:00
+    Modified: 08.12.2025, 15:45 - Du-Form + vertikales Layout
 -->
 {% extends "base.html" %}
 
@@ -20,12 +21,12 @@
     
     <div class="card mb-lg">
         <p class="text-muted mb-md">
-            Hier können Sie einzelne Direktzünder aktivieren oder deaktivieren.
-            Deaktivierte Zünder werden auf der Hauptseite mit einem Schraubenschlüssel-Icon
-            angezeigt und können nicht ausgelöst werden.
+            Hier kannst du einzelne Direktzünder aktivieren oder deaktivieren.
+            Deaktivierte Zünder werden auf der Hauptseite ausgegraut
+            und können nicht ausgelöst werden.
         </p>
         <p class="text-muted">
-            <strong>Tipp:</strong> Deaktivieren Sie defekte oder nicht angeschlossene Zünder,
+            <strong>Tipp:</strong> Deaktiviere defekte oder nicht angeschlossene Zünder,
             um versehentliches Auslösen zu verhindern.
         </p>
     </div>
@@ -37,12 +38,10 @@
                 {% if dz.available %}
                 <img src="{{ url_for('static', filename='images/fw_off.png') }}" 
                      alt="" 
-                     style="height: 24px; vertical-align: middle; margin-right: 8px;"
                      onerror="this.style.display='none'">
                 {% else %}
                 <img src="{{ url_for('static', filename='images/fw_n_a.png') }}" 
                      alt="" 
-                     style="height: 24px; vertical-align: middle; margin-right: 8px;"
                      onerror="this.style.display='none'">
                 {% endif %}
                 Direktzünder {{ dz.nr }}

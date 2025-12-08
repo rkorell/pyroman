@@ -7,6 +7,8 @@
  * 
  * Erstellt: 07.12.2025, 21:00
  * Modified: 08.12.2025, 12:35 - Bugfix: Gefeuerte Kanäle werden jetzt gesperrt (disabled)
+ * Modified: 08.12.2025, 15:45 - Fire-Master Button, Icon-Wechsel bei Abfeuern, vertikale Listen
+ * Modified: 08.12.2025, 17:00 - Auth-Flow UI-Updates (Elemente ein-/ausblenden)
  */
 
 // =============================================================================
@@ -118,7 +120,7 @@ function handleChannelFired(data) {
         PyroMan.direktzuenderStates[data.nr] = true;
     }
     
-    updateFireButtons();
+    updateFireItems();
     playExplosionSound();
 }
 
@@ -130,13 +132,13 @@ function handleChannelReset(data) {
         PyroMan.direktzuenderStates[data.nr] = false;
     }
     
-    updateFireButtons();
+    updateFireItems();
 }
 
 function handleFireEnabledChanged(data) {
     PyroMan.fireEnabled = data.enabled;
-    updateFireMasterSwitch();
-    updateFireButtons();
+    updateFireMasterButton();
+    updateFireItems();
 }
 
 function handleAuthSuccess() {
@@ -157,8 +159,8 @@ function handleAuthTimeout() {
 
 function updateUI() {
     updateAuthStatus();
-    updateFireMasterSwitch();
-    updateFireButtons();
+    updateFireMasterButton();
+    updateFireItems();
 }
 
 function updateConnectionStatus(connected) {
@@ -170,69 +172,101 @@ function updateConnectionStatus(connected) {
 }
 
 function updateAuthStatus() {
-    const banner = document.getElementById('auth-banner');
-    const loginBtn = document.getElementById('login-btn');
+    const authSection = document.getElementById('auth-section');
+    const mainNav = document.getElementById('main-nav');
+    const controlsSection = document.getElementById('controls-section');
     
-    if (banner) {
-        if (PyroMan.authorized) {
-            banner.className = 'status-banner success';
-            banner.textContent = '🔓 System autorisiert';
-        } else {
-            banner.className = 'status-banner danger';
-            banner.textContent = '🔒 Nicht autorisiert - Bitte anmelden';
-        }
-    }
-    
-    if (loginBtn) {
-        loginBtn.classList.toggle('hidden', PyroMan.authorized);
-    }
-}
-
-function updateFireMasterSwitch() {
-    const toggle = document.getElementById('fire-master-toggle');
-    const container = document.getElementById('fire-master');
-    
-    if (toggle) {
-        toggle.classList.toggle('active', PyroMan.fireEnabled);
-    }
-    
-    if (container) {
-        container.classList.toggle('active', PyroMan.fireEnabled);
-        container.classList.toggle('inactive', !PyroMan.fireEnabled);
+    if (PyroMan.authorized) {
+        // Autorisiert: Auth-Sektion ausblenden, Nav + Controls einblenden
+        if (authSection) authSection.classList.add('hidden');
+        if (mainNav) mainNav.classList.remove('hidden');
+        if (controlsSection) controlsSection.classList.remove('hidden');
+    } else {
+        // Nicht autorisiert: Auth-Sektion einblenden, Nav + Controls ausblenden
+        if (authSection) authSection.classList.remove('hidden');
+        if (mainNav) mainNav.classList.add('hidden');
+        if (controlsSection) controlsSection.classList.add('hidden');
     }
 }
 
-function updateFireButtons() {
-    // Koffer Buttons
-    document.querySelectorAll('.fire-btn[data-koffer]').forEach(btn => {
-        const kofferId = parseInt(btn.dataset.koffer);
-        const kanalNr = parseInt(btn.dataset.kanal);
+function updateFireMasterButton() {
+    const btn = document.getElementById('fire-master-btn');
+    if (!btn) return;
+    
+    const icon = btn.querySelector('.fire-master-icon');
+    const text = btn.querySelector('.fire-master-text');
+    
+    if (PyroMan.fireEnabled) {
+        btn.classList.remove('inactive');
+        btn.classList.add('active');
+        if (icon) icon.textContent = '🔥';
+        if (text) text.textContent = 'Feuer freigegeben';
+    } else {
+        btn.classList.remove('active');
+        btn.classList.add('inactive');
+        if (icon) icon.textContent = '🔒';
+        if (text) text.textContent = 'Feuer gesperrt';
+    }
+}
+
+function updateFireItems() {
+    // Koffer Items
+    document.querySelectorAll('.fire-item[data-koffer]').forEach(item => {
+        const kofferId = parseInt(item.dataset.koffer);
+        const kanalNr = parseInt(item.dataset.kanal);
         const key = `${kofferId}-${kanalNr}`;
         const fired = PyroMan.kofferStates[key] || false;
         
-        btn.classList.toggle('ready', !fired);
-        btn.classList.toggle('fired', fired);
-        btn.disabled = !PyroMan.fireEnabled || !PyroMan.authorized || fired;
+        updateFireItemState(item, fired, true);
     });
     
-    // Direktzünder Buttons
-    document.querySelectorAll('.fire-btn[data-direktzuender]').forEach(btn => {
-        const nr = parseInt(btn.dataset.direktzuender);
+    // Direktzünder Items
+    document.querySelectorAll('.fire-item[data-direktzuender]').forEach(item => {
+        const nr = parseInt(item.dataset.direktzuender);
         const fired = PyroMan.direktzuenderStates[nr] || false;
-        const available = btn.dataset.available !== 'false';
-        
-        btn.classList.remove('ready', 'fired', 'unavailable');
+        const available = item.dataset.available !== 'false';
         
         if (!available) {
-            btn.classList.add('unavailable');
-        } else if (fired) {
-            btn.classList.add('fired');
+            item.classList.remove('ready', 'fired');
+            item.classList.add('unavailable');
+            updateItemDisabled(item, true);
         } else {
-            btn.classList.add('ready');
+            item.classList.remove('unavailable');
+            updateFireItemState(item, fired, available);
         }
-        
-        btn.disabled = !PyroMan.fireEnabled || !PyroMan.authorized || !available || fired;
     });
+}
+
+function updateFireItemState(item, fired, available) {
+    const iconReady = item.querySelector('.icon-ready');
+    const iconFired = item.querySelector('.icon-fired');
+    const status = item.querySelector('.fire-item-status');
+    
+    if (fired) {
+        item.classList.remove('ready');
+        item.classList.add('fired');
+        if (iconReady) iconReady.classList.add('hidden');
+        if (iconFired) iconFired.classList.remove('hidden');
+        if (status) status.textContent = 'Abgefeuert';
+    } else {
+        item.classList.remove('fired');
+        item.classList.add('ready');
+        if (iconReady) iconReady.classList.remove('hidden');
+        if (iconFired) iconFired.classList.add('hidden');
+        if (status) status.textContent = 'Bereit';
+    }
+    
+    // Disabled wenn: nicht autorisiert, Feuer gesperrt, oder bereits gefeuert
+    const disabled = !PyroMan.fireEnabled || !PyroMan.authorized || fired || !available;
+    updateItemDisabled(item, disabled);
+}
+
+function updateItemDisabled(item, disabled) {
+    if (disabled) {
+        item.classList.add('disabled');
+    } else {
+        item.classList.remove('disabled');
+    }
 }
 
 // =============================================================================
@@ -403,15 +437,6 @@ function showToast(message, type = 'info') {
 function createToastContainer() {
     const container = document.createElement('div');
     container.id = 'toast-container';
-    container.style.cssText = `
-        position: fixed;
-        bottom: 20px;
-        right: 70px;
-        z-index: 1001;
-        display: flex;
-        flex-direction: column;
-        gap: 10px;
-    `;
     document.body.appendChild(container);
     return container;
 }
@@ -442,6 +467,13 @@ function toggleDirektzuenderAvailable(nr) {
             if (data.success) {
                 toggle.classList.toggle('active', newState);
                 item.classList.toggle('disabled', !newState);
+                
+                // Toggle-Label aktualisieren
+                const label = item.querySelector('.toggle-label');
+                if (label) {
+                    label.textContent = newState ? 'Aktiv' : 'Inaktiv';
+                }
+                
                 showToast(`Direktzünder ${nr}: ${newState ? 'aktiviert' : 'deaktiviert'}`, 'success');
             } else {
                 showToast('Fehler beim Speichern', 'danger');
@@ -459,27 +491,29 @@ function toggleDirektzuenderAvailable(nr) {
 // =============================================================================
 
 function initEventListeners() {
-    // Fire Buttons (Koffer)
-    document.querySelectorAll('.fire-btn[data-koffer]').forEach(btn => {
-        btn.addEventListener('click', () => {
-            const kofferId = parseInt(btn.dataset.koffer);
-            const kanalNr = parseInt(btn.dataset.kanal);
+    // Fire Items (Koffer)
+    document.querySelectorAll('.fire-item[data-koffer]').forEach(item => {
+        item.addEventListener('click', () => {
+            if (item.classList.contains('disabled')) return;
+            const kofferId = parseInt(item.dataset.koffer);
+            const kanalNr = parseInt(item.dataset.kanal);
             fireKoffer(kofferId, kanalNr);
         });
     });
     
-    // Fire Buttons (Direktzünder)
-    document.querySelectorAll('.fire-btn[data-direktzuender]').forEach(btn => {
-        btn.addEventListener('click', () => {
-            const nr = parseInt(btn.dataset.direktzuender);
+    // Fire Items (Direktzünder)
+    document.querySelectorAll('.fire-item[data-direktzuender]').forEach(item => {
+        item.addEventListener('click', () => {
+            if (item.classList.contains('disabled') || item.classList.contains('unavailable')) return;
+            const nr = parseInt(item.dataset.direktzuender);
             fireDirektzuender(nr);
         });
     });
     
-    // Fire Master Toggle
-    const fireMasterToggle = document.getElementById('fire-master-toggle');
-    if (fireMasterToggle) {
-        fireMasterToggle.addEventListener('click', toggleFireEnabled);
+    // Fire Master Button
+    const fireMasterBtn = document.getElementById('fire-master-btn');
+    if (fireMasterBtn) {
+        fireMasterBtn.addEventListener('click', toggleFireEnabled);
     }
     
     // Login Button

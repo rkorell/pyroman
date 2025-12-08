@@ -1,0 +1,41 @@
+<!--
+    wetter.html - PyroMan Wetter-Seite
+    
+    Platzhalter für Wetterdaten
+    
+    (c) Dr. Ralf Korell, 2025/26
+    
+    Erstellt: 08.12.2025, 17:00
+-->
+{% extends "base.html" %}
+
+{% block title %}Wetter{% endblock %}
+
+{% block content %}
+<div class="fade-in">
+    <div class="section-header">
+        <h2 class="section-title">☀️ Heutiges Wetter</h2>
+        <div class="section-divider"></div>
+    </div>
+    
+    <!-- Wetter aktuell -->
+    <div class="card wetter-section">
+        <div class="card-header">
+            <span class="card-title">🌡️ Wetter aktuell in Müllenborn (PWS)</span>
+        </div>
+        <div class="wetter-placeholder">
+            [Platzhalter - Hier kommen die aktuellen Wetterdaten der PWS]
+        </div>
+    </div>
+    
+    <!-- Voraussage -->
+    <div class="card wetter-section">
+        <div class="card-header">
+            <span class="card-title">📅 Voraussage für Gerolstein</span>
+        </div>
+        <div class="wetter-placeholder">
+            [Platzhalter - Hier kommt die Wettervoraussage]
+        </div>
+    </div>
+</div>
+{% endblock %}
