@@ -8,6 +8,7 @@
  * Erstellt: 07.12.2025, 21:00
  * Modified: 08.12.2025, 15:45 - Mobile-First, vertikale Listen, Fire-Master Button, Scroll-Safe-Zone
  * Modified: 08.12.2025, 17:00 - Zweizeiliger Header, Nav gleichmäßig, Fire-Master 2/3 + Reset 1/3, Auth-Flow
+ * Modified: 08.12.2025, 18:00 - Wetter-Styles: PWS-Card, Forecast-Tabelle
  */
 
 /* =============================================================================
@@ -734,7 +735,22 @@ a:hover {
    ============================================================================= */
 
 .wetter-section {
-    margin-bottom: var(--spacing-xl);
+    margin-bottom: var(--spacing-lg);
+}
+
+.wetter-error {
+    background: var(--danger-dark);
+    border: 1px solid var(--danger);
+    border-radius: var(--radius-md);
+    padding: var(--spacing-md);
+    margin-bottom: var(--spacing-lg);
+    color: var(--danger);
+    text-align: center;
+}
+
+.wetter-time {
+    font-size: 0.8rem;
+    color: var(--text-muted);
 }
 
 .wetter-placeholder {
@@ -742,6 +758,141 @@ a:hover {
     text-align: center;
     color: var(--text-muted);
     font-style: italic;
+}
+
+/* =============================================================================
+   PWS Aktuelles Wetter
+   ============================================================================= */
+
+.pws-content {
+    padding: var(--spacing-sm);
+}
+
+.pws-main {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+}
+
+.pws-temp {
+    font-size: 3rem;
+    font-weight: 700;
+    color: var(--accent-secondary);
+    text-align: center;
+    line-height: 1;
+    margin-bottom: var(--spacing-sm);
+}
+
+.pws-details {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
+}
+
+.pws-detail-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--spacing-xs) 0;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.pws-detail-row:last-child {
+    border-bottom: none;
+}
+
+.pws-label {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+
+.pws-value {
+    color: var(--text-primary);
+    font-weight: 500;
+}
+
+/* =============================================================================
+   Forecast Tabelle
+   ============================================================================= */
+
+.forecast-table-wrapper {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+.forecast-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+}
+
+.forecast-table th,
+.forecast-table td {
+    padding: var(--spacing-sm) var(--spacing-xs);
+    text-align: center;
+    border-bottom: 1px solid var(--border-color);
+    white-space: nowrap;
+}
+
+.forecast-table th {
+    background: var(--bg-secondary);
+    color: var(--text-secondary);
+    font-weight: 600;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    position: sticky;
+    top: 0;
+}
+
+.forecast-table tbody tr:hover {
+    background: var(--bg-card-hover);
+}
+
+.forecast-table tbody tr:nth-child(even) {
+    background: var(--bg-card-alt);
+}
+
+.forecast-table tbody tr:nth-child(even):hover {
+    background: var(--bg-card-hover);
+}
+
+.forecast-time {
+    font-weight: 600;
+    color: var(--accent-primary);
+}
+
+.forecast-condition {
+    text-align: left;
+    max-width: 100px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.forecast-temp {
+    font-weight: 600;
+}
+
+.forecast-precip-chance {
+    color: var(--text-secondary);
+}
+
+.forecast-precip-chance.precip-high {
+    color: var(--warning);
+    font-weight: 600;
+}
+
+.forecast-precip-amount {
+    color: var(--text-muted);
+}
+
+.forecast-clouds,
+.forecast-humidity {
+    color: var(--text-secondary);
+}
+
+.forecast-wind {
+    color: var(--text-secondary);
 }
 
 /* =============================================================================
@@ -973,7 +1124,7 @@ a:hover {
 .visible { display: block !important; }
 
 /* =============================================================================
-   Desktop Anpassungen (optional)
+   Desktop Anpassungen
    ============================================================================= */
 
 @media (min-width: 768px) {
@@ -997,5 +1148,37 @@ a:hover {
     
     .fire-item-label {
         font-size: 1.2rem;
+    }
+    
+    /* Wetter Desktop */
+    .pws-main {
+        flex-direction: row;
+        align-items: center;
+    }
+    
+    .pws-temp {
+        font-size: 4rem;
+        min-width: 150px;
+        margin-bottom: 0;
+        text-align: left;
+    }
+    
+    .pws-details {
+        flex: 1;
+        padding-left: var(--spacing-lg);
+        border-left: 1px solid var(--border-color);
+    }
+    
+    .forecast-table {
+        font-size: 0.9rem;
+    }
+    
+    .forecast-table th,
+    .forecast-table td {
+        padding: var(--spacing-sm) var(--spacing-md);
+    }
+    
+    .forecast-condition {
+        max-width: 150px;
     }
 }

@@ -11,6 +11,7 @@ Erstellt: 07.12.2025, 21:00
 Modified: 08.12.2025, 14:30 - Modularisierung: state, fire_control, direktzuender_wartung ausgelagert
 Modified: 08.12.2025, 15:45 - scroll_safe_zone an Templates übergeben
 Modified: 08.12.2025, 17:00 - Neue Route /wetter
+Modified: 08.12.2025, 18:00 - Route /wetter holt echte Wetterdaten via wetter_api
 """
 
 import json
@@ -22,7 +23,8 @@ import config
 import state
 import fire_control
 import direktzuender_wartung
-from authorize import authenticate, AuthorizeError
+import wetter_api
+from authorize import AuthorizeError
 
 # =============================================================================
 # Flask App Setup
@@ -205,6 +207,8 @@ def handle_set_fire_enabled(message):
 
 def handle_auth_start(ws):
     """Startet Autorisierung."""
+    from authorize import authenticate
+    
     # Broadcast: Warte auf Auth
     try:
         ws.send(json.dumps({'type': 'auth_waiting'}))
@@ -284,12 +288,18 @@ def wartung_page():
 
 @app.route('/wetter')
 def wetter_page():
-    """Wetter-Seite."""
+    """Wetter-Seite - holt Daten bei jedem Aufruf."""
     if not config.is_valid():
         return render_template('error.html', errors=config.get_startup_errors())
     
+    # Wetterdaten bei Seitenaufruf laden
+    weather_data = wetter_api.fetch_all_weather_data()
+    
     return render_template('wetter.html',
-                           active_page='wetter')
+                           active_page='wetter',
+                           pws=weather_data.get('pws'),
+                           forecast=weather_data.get('forecast'),
+                           weather_error=weather_data.get('error'))
 
 # =============================================================================
 # API Routes

@@ -1,15 +1,15 @@
 [
   {
     "nr": 1,
-    "available": true
+    "available": false
   },
   {
     "nr": 2,
-    "available": false
+    "available": true
   },
   {
     "nr": 3,
-    "available": false
+    "available": true
   },
   {
     "nr": 4,
@@ -17,7 +17,7 @@
   },
   {
     "nr": 5,
-    "available": false
+    "available": true
   },
   {
     "nr": 6,

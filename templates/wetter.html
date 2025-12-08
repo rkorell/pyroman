@@ -1,11 +1,13 @@
 <!--
     wetter.html - PyroMan Wetter-Seite
     
-    Platzhalter für Wetterdaten
+    PWS aktuelles Wetter + 12h Voraussage
     
     (c) Dr. Ralf Korell, 2025/26
     
     Erstellt: 08.12.2025, 17:00
+    Modified: 08.12.2025, 18:00 - Echte Wetterdaten via wetter_api
+    Modified: 08.12.2025, 19:15 - Einheit km/h zur Forecast-Tabelle hinzugefügt
 -->
 {% extends "base.html" %}
 
@@ -18,24 +20,166 @@
         <div class="section-divider"></div>
     </div>
     
-    <!-- Wetter aktuell -->
+    {% if weather_error %}
+    <div class="wetter-error">
+        ⚠️ {{ weather_error }}
+    </div>
+    {% endif %}
+    
+    <!-- Wetter aktuell (PWS) -->
     <div class="card wetter-section">
         <div class="card-header">
             <span class="card-title">🌡️ Wetter aktuell in Müllenborn (PWS)</span>
+            {% if pws and pws.obs_time %}
+            <span class="wetter-time">{{ pws.obs_time }}</span>
+            {% endif %}
         </div>
+        
+        {% if pws %}
+        <div class="pws-content">
+            <div class="pws-main">
+                <div class="pws-temp">
+                    {% if pws.temp is not none %}
+                    {{ "%.1f"|format(pws.temp) }}°C
+                    {% else %}
+                    --
+                    {% endif %}
+                </div>
+                <div class="pws-details">
+                    <div class="pws-detail-row">
+                        <span class="pws-label">💨 Wind:</span>
+                        <span class="pws-value">
+                            {% if pws.wind_speed is not none %}
+                            {{ "%.1f"|format(pws.wind_speed) }} km/h {{ pws.wind_dir }}
+                            {% if pws.wind_gust and pws.wind_gust > pws.wind_speed %}
+                            (Böen {{ "%.1f"|format(pws.wind_gust) }})
+                            {% endif %}
+                            {% else %}
+                            --
+                            {% endif %}
+                        </span>
+                    </div>
+                    <div class="pws-detail-row">
+                        <span class="pws-label">💧 Niederschlag:</span>
+                        <span class="pws-value">
+                            {% if pws.precip_total is not none %}
+                            {{ "%.1f"|format(pws.precip_total) }} mm
+                            {% if pws.precip_rate and pws.precip_rate > 0 %}
+                            ({{ "%.1f"|format(pws.precip_rate) }} mm/h)
+                            {% endif %}
+                            {% else %}
+                            --
+                            {% endif %}
+                        </span>
+                    </div>
+                    <div class="pws-detail-row">
+                        <span class="pws-label">💦 Luftfeuchte:</span>
+                        <span class="pws-value">
+                            {% if pws.humidity is not none %}
+                            {{ pws.humidity }}%
+                            {% else %}
+                            --
+                            {% endif %}
+                        </span>
+                    </div>
+                    <div class="pws-detail-row">
+                        <span class="pws-label">📊 Luftdruck:</span>
+                        <span class="pws-value">
+                            {% if pws.pressure is not none %}
+                            {{ "%.1f"|format(pws.pressure) }} hPa
+                            {% else %}
+                            --
+                            {% endif %}
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% else %}
         <div class="wetter-placeholder">
-            [Platzhalter - Hier kommen die aktuellen Wetterdaten der PWS]
+            Keine PWS-Daten verfügbar
         </div>
+        {% endif %}
     </div>
     
-    <!-- Voraussage -->
+    <!-- Voraussage (12h Tabelle) -->
     <div class="card wetter-section">
         <div class="card-header">
-            <span class="card-title">📅 Voraussage für Gerolstein</span>
+            <span class="card-title">📅 Voraussage für Gerolstein (12h)</span>
         </div>
+        
+        {% if forecast %}
+        <div class="forecast-table-wrapper">
+            <table class="forecast-table">
+                <thead>
+                    <tr>
+                        <th>Zeit</th>
+                        <th>Bedingung</th>
+                        <th>Temp</th>
+                        <th>Regen%</th>
+                        <th>Menge</th>
+                        <th>Wolken</th>
+                        <th>Feuchte</th>
+                        <th>Wind</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for hour in forecast %}
+                    <tr>
+                        <td class="forecast-time">{{ hour.time_short }}</td>
+                        <td class="forecast-condition" title="{{ hour.condition }}">{{ hour.condition_short or hour.condition or '--' }}</td>
+                        <td class="forecast-temp">
+                            {% if hour.temp is not none %}
+                            {{ hour.temp }}°
+                            {% else %}
+                            --
+                            {% endif %}
+                        </td>
+                        <td class="forecast-precip-chance {% if hour.precip_chance and hour.precip_chance >= 50 %}precip-high{% endif %}">
+                            {% if hour.precip_chance is not none %}
+                            {{ hour.precip_chance }}%
+                            {% else %}
+                            --
+                            {% endif %}
+                        </td>
+                        <td class="forecast-precip-amount">
+                            {% if hour.qpf is not none and hour.qpf > 0 %}
+                            {{ "%.1f"|format(hour.qpf) }}mm
+                            {% else %}
+                            -
+                            {% endif %}
+                        </td>
+                        <td class="forecast-clouds">
+                            {% if hour.cloud_cover is not none %}
+                            {{ hour.cloud_cover }}%
+                            {% else %}
+                            --
+                            {% endif %}
+                        </td>
+                        <td class="forecast-humidity">
+                            {% if hour.humidity is not none %}
+                            {{ hour.humidity }}%
+                            {% else %}
+                            --
+                            {% endif %}
+                        </td>
+                        <td class="forecast-wind">
+                            {% if hour.wind_speed is not none %}
+                            {{ hour.wind_speed }} km/h {{ hour.wind_dir or '' }}
+                            {% else %}
+                            --
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
         <div class="wetter-placeholder">
-            [Platzhalter - Hier kommt die Wettervoraussage]
+            Keine Forecast-Daten verfügbar
         </div>
+        {% endif %}
     </div>
 </div>
 {% endblock %}

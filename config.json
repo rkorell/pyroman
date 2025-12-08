@@ -1,0 +1,44 @@
+{
+  "system": {
+    "name": "PyroMan",
+    "version": "2025.1"
+  },
+  "logging": {
+    "level": "DEBUG"
+  },
+  "rf_sender": {
+    "gpio": 21,
+    "gap": 10850,
+    "t0": 350,
+    "t1": 1050,
+    "repeats": 10,
+    "bits": 24
+  },
+  "rf_empfaenger": {
+    "gpio": 27
+  },
+  "autorisierung": {
+    "auth_required": true,
+    "auth_code": 7654321,
+    "auth_timeout_sekunden": 5
+  },
+  "koffer": [
+    {"id": 1, "name": "Koffer 1", "koffer_nummer": 100, "enabled": true},
+    {"id": 2, "name": "Koffer 2", "koffer_nummer": 200, "enabled": true},
+    {"id": 3, "name": "Koffer 3", "koffer_nummer": 300, "enabled": true},
+    {"id": 4, "name": "Koffer 4", "koffer_nummer": 400, "enabled": true},
+    {"id": 5, "name": "Koffer 5", "koffer_nummer": 500, "enabled": true}
+  ],
+  "direktzuender": {
+    "enabled": true,
+    "erste_box_nr": 1001,
+    "anzahl": 30
+  },
+  "audio": {
+    "explosion_sound": "static/sounds/explosion.mp3",
+    "enabled_default": true
+  },
+  "ui": {
+    "scroll_safe_zone": 50
+  }
+}
