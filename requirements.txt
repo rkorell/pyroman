@@ -5,3 +5,4 @@
 Flask>=2.0
 flask-sock>=0.6.0
 pigpio>=1.78
+requests>=2.28.1

@@ -182,7 +182,7 @@ def _setup_logging():
         format='[%(levelname)-5s] %(asctime)s %(name)s: %(message)s',
         datefmt='%H:%M:%S'
     )
-    
+    logging.getLogger('werkzeug').setLevel(logging.WARNING)
     # Logger für dieses Modul
     logger = logging.getLogger(__name__)
     logger.debug(f"Logging initialisiert auf Level: {level_str}")

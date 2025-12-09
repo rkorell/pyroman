@@ -186,7 +186,7 @@ a:hover {
 .logo-text {
     font-size: 1.25rem;
     font-weight: 700;
-    background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+    background: linear-gradient(135deg, #D4A900, #FFAA00);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
