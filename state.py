@@ -9,6 +9,7 @@ Bietet Getter/Setter API für alle Module.
 (c) Dr. Ralf Korell, 2025/26
 
 Erstellt: 08.12.2025, 14:30
+Modified: 12.12.2025, 17:00 - authorized = True (Auth entfernt)
 """
 
 import config
@@ -21,7 +22,7 @@ logger = config.get_logger(__name__)
 # =============================================================================
 
 _state = {
-    'authorized': False,
+    'authorized': True,
     'fire_enabled': False,
     'koffer_states': {},       # "koffer_id-kanal_nr": True/False
     'direktzuender_states': {} # nr: True/False

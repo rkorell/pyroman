@@ -7,6 +7,7 @@
     Erstellt: 07.12.2025, 21:00
     Modified: 08.12.2025, 15:45 - Fire-Master Button, Scroll-Safe-Zone
     Modified: 08.12.2025, 17:00 - Zweizeiliger Header, Auth-Flow, Navigation nur bei Auth
+    Modified: 12.12.2025, 17:00 - Auth-Elemente entfernt (Pi 5 Kompatibilität)
 -->
 <html lang="de">
 <head>
@@ -43,8 +44,8 @@
                 </div>
             </div>
             
-            <!-- Header Zeile 2: Navigation (nur wenn autorisiert) -->
-            <nav id="main-nav" class="nav-row hidden">
+            <!-- Header Zeile 2: Navigation -->
+            <nav id="main-nav" class="nav-row">
                 <a href="{{ url_for('koffer_page') }}" class="nav-link {{ 'active' if active_page == 'koffer' else '' }}">Koffer</a>
                 <a href="{{ url_for('direktzuender_page') }}" class="nav-link {{ 'active' if active_page == 'direktzuender' else '' }}">Direkt</a>
                 <a href="{{ url_for('wartung_page') }}" class="nav-link {{ 'active' if active_page == 'wartung' else '' }}">Wartung</a>
@@ -52,22 +53,11 @@
             </nav>
         </header>
         
-        <!-- Auth-Bereich (nur wenn NICHT autorisiert) -->
-        <div id="auth-section" class="auth-section">
-            <div class="auth-message">
-                <span class="auth-icon">🔒</span>
-                <span class="auth-text">Nicht autorisiert - Bitte anmelden</span>
-            </div>
-            <button id="login-btn" class="btn btn-primary btn-large">
-                🔑 Anmelden
-            </button>
-        </div>
-        
         <!-- Main Content -->
         <main class="main-content">
             <div class="container">
-                <!-- Controls (nur wenn autorisiert) -->
-                <div id="controls-section" class="controls-row hidden">
+                <!-- Controls -->
+                <div id="controls-section" class="controls-row">
                     <button id="fire-master-btn" class="fire-master-btn inactive">
                         <span class="fire-master-icon">🔒</span>
                         <span class="fire-master-text">Feuer gesperrt</span>
@@ -85,15 +75,6 @@
         <footer class="footer">
             © Dr. Ralf Korell 2025/26
         </footer>
-    </div>
-    
-    <!-- Auth Modal -->
-    <div id="auth-overlay" class="auth-overlay">
-        <div class="auth-modal">
-            <h2 class="auth-title">🔐 Anmeldung</h2>
-            <input type="password" class="auth-input" placeholder="••••••" readonly>
-            <p class="auth-hint">Bitte Passwort eingeben...</p>
-        </div>
     </div>
     
     <script src="{{ url_for('static', filename='js/pyroman.js') }}"></script>

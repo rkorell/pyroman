@@ -12,6 +12,7 @@ Modified: 08.12.2025, 14:30 - Modularisierung: state, fire_control, direktzuende
 Modified: 08.12.2025, 15:45 - scroll_safe_zone an Templates übergeben
 Modified: 08.12.2025, 17:00 - Neue Route /wetter
 Modified: 08.12.2025, 18:00 - Route /wetter holt echte Wetterdaten via wetter_api
+Modified: 12.12.2025, 17:00 - Auth-Logik entfernt (Pi 5 Kompatibilität)
 """
 
 import json
@@ -24,7 +25,6 @@ import state
 import fire_control
 import direktzuender_wartung
 import wetter_api
-from authorize import AuthorizeError
 
 # =============================================================================
 # Flask App Setup
@@ -123,8 +123,6 @@ def handle_ws_message(ws, message):
         handle_reset_all()
     elif msg_type == 'set_fire_enabled':
         handle_set_fire_enabled(message)
-    elif msg_type == 'auth_start':
-        handle_auth_start(ws)
     else:
         logger.warning(f"Unbekannter Message-Typ: {msg_type}")
 
@@ -204,38 +202,6 @@ def handle_set_fire_enabled(message):
         'enabled': enabled
     })
     logger.debug(f"Feuer {'aktiviert' if enabled else 'deaktiviert'}")
-
-def handle_auth_start(ws):
-    """Startet Autorisierung."""
-    from authorize import authenticate
-    
-    # Broadcast: Warte auf Auth
-    try:
-        ws.send(json.dumps({'type': 'auth_waiting'}))
-    except Exception:
-        pass
-    
-    try:
-        result = authenticate()
-        
-        if result:
-            state.set_authorized(True)
-            broadcast({'type': 'auth_success'})
-            broadcast(get_full_state_message())
-            logger.info("Autorisierung erfolgreich")
-        else:
-            try:
-                ws.send(json.dumps({'type': 'auth_timeout'}))
-            except Exception:
-                pass
-            logger.debug("Autorisierung Timeout")
-    
-    except AuthorizeError as e:
-        logger.error(f"Autorisierung Fehler: {e}")
-        try:
-            ws.send(json.dumps({'type': 'error', 'message': str(e)}))
-        except Exception:
-            pass
 
 # =============================================================================
 # HTTP Routes
@@ -341,11 +307,6 @@ def main():
             logger.error(f"  - {error}")
     else:
         logger.info("Config OK")
-        
-        # Auth-Status prüfen
-        if not config.is_auth_required():
-            state.set_authorized(True)
-            logger.info("auth_required=False, System ist autorisiert")
     
     # Server starten
     port = 5000

@@ -9,6 +9,7 @@
  * Modified: 08.12.2025, 12:35 - Bugfix: Gefeuerte Kanäle werden jetzt gesperrt (disabled)
  * Modified: 08.12.2025, 15:45 - Fire-Master Button, Icon-Wechsel bei Abfeuern, vertikale Listen
  * Modified: 08.12.2025, 17:00 - Auth-Flow UI-Updates (Elemente ein-/ausblenden)
+ * Modified: 12.12.2025, 17:00 - Auth-Logik entfernt (Pi 5 Kompatibilität)
  */
 
 // =============================================================================
@@ -17,7 +18,7 @@
 
 const PyroMan = {
     socket: null,
-    authorized: false,
+    authorized: true,
     fireEnabled: false,
     currentKoffer: 1,
     kofferStates: {},
@@ -88,15 +89,6 @@ function handleServerMessage(data) {
         case 'fire_enabled_changed':
             handleFireEnabledChanged(data);
             break;
-        case 'auth_waiting':
-            showAuthModal();
-            break;
-        case 'auth_success':
-            handleAuthSuccess();
-            break;
-        case 'auth_timeout':
-            handleAuthTimeout();
-            break;
         case 'error':
             showError(data.message);
             break;
@@ -141,24 +133,11 @@ function handleFireEnabledChanged(data) {
     updateFireItems();
 }
 
-function handleAuthSuccess() {
-    PyroMan.authorized = true;
-    hideAuthModal();
-    updateAuthStatus();
-    showToast('Autorisierung erfolgreich', 'success');
-}
-
-function handleAuthTimeout() {
-    hideAuthModal();
-    showToast('Autorisierung fehlgeschlagen', 'danger');
-}
-
 // =============================================================================
 // UI Updates
 // =============================================================================
 
 function updateUI() {
-    updateAuthStatus();
     updateFireMasterButton();
     updateFireItems();
 }
@@ -168,24 +147,6 @@ function updateConnectionStatus(connected) {
     if (indicator) {
         indicator.classList.toggle('connected', connected);
         indicator.classList.toggle('disconnected', !connected);
-    }
-}
-
-function updateAuthStatus() {
-    const authSection = document.getElementById('auth-section');
-    const mainNav = document.getElementById('main-nav');
-    const controlsSection = document.getElementById('controls-section');
-    
-    if (PyroMan.authorized) {
-        // Autorisiert: Auth-Sektion ausblenden, Nav + Controls einblenden
-        if (authSection) authSection.classList.add('hidden');
-        if (mainNav) mainNav.classList.remove('hidden');
-        if (controlsSection) controlsSection.classList.remove('hidden');
-    } else {
-        // Nicht autorisiert: Auth-Sektion einblenden, Nav + Controls ausblenden
-        if (authSection) authSection.classList.remove('hidden');
-        if (mainNav) mainNav.classList.add('hidden');
-        if (controlsSection) controlsSection.classList.add('hidden');
     }
 }
 
@@ -256,8 +217,8 @@ function updateFireItemState(item, fired, available) {
         if (status) status.textContent = 'Bereit';
     }
     
-    // Disabled wenn: nicht autorisiert, Feuer gesperrt, oder bereits gefeuert
-    const disabled = !PyroMan.fireEnabled || !PyroMan.authorized || fired || !available;
+    // Disabled wenn: Feuer gesperrt, oder bereits gefeuert
+    const disabled = !PyroMan.fireEnabled || fired || !available;
     updateItemDisabled(item, disabled);
 }
 
@@ -274,8 +235,8 @@ function updateItemDisabled(item, disabled) {
 // =============================================================================
 
 function fireKoffer(kofferId, kanalNr) {
-    if (!PyroMan.authorized || !PyroMan.fireEnabled) {
-        console.warn('Not authorized or fire disabled');
+    if (!PyroMan.fireEnabled) {
+        console.warn('Fire disabled');
         return;
     }
     
@@ -288,8 +249,8 @@ function fireKoffer(kofferId, kanalNr) {
 }
 
 function fireDirektzuender(nr) {
-    if (!PyroMan.authorized || !PyroMan.fireEnabled) {
-        console.warn('Not authorized or fire disabled');
+    if (!PyroMan.fireEnabled) {
+        console.warn('Fire disabled');
         return;
     }
     
@@ -318,35 +279,10 @@ function toggleFireEnabled() {
     sendMessage('set_fire_enabled', { enabled: !PyroMan.fireEnabled });
 }
 
-function startAuth() {
-    sendMessage('auth_start', {});
-}
-
 function selectKoffer(kofferId) {
     PyroMan.currentKoffer = kofferId;
     // Seite neu laden mit anderem Koffer
     window.location.href = `/koffer?id=${kofferId}`;
-}
-
-// =============================================================================
-// Auth Modal
-// =============================================================================
-
-function showAuthModal() {
-    const overlay = document.getElementById('auth-overlay');
-    if (overlay) {
-        overlay.classList.add('visible');
-        // Focus auf Input
-        const input = overlay.querySelector('.auth-input');
-        if (input) input.focus();
-    }
-}
-
-function hideAuthModal() {
-    const overlay = document.getElementById('auth-overlay');
-    if (overlay) {
-        overlay.classList.remove('visible');
-    }
 }
 
 // =============================================================================
@@ -516,12 +452,6 @@ function initEventListeners() {
         fireMasterBtn.addEventListener('click', toggleFireEnabled);
     }
     
-    // Login Button
-    const loginBtn = document.getElementById('login-btn');
-    if (loginBtn) {
-        loginBtn.addEventListener('click', startAuth);
-    }
-    
     // Reset All Button
     const resetAllBtn = document.getElementById('reset-all-btn');
     if (resetAllBtn) {
@@ -554,13 +484,6 @@ function initEventListeners() {
             const nr = parseInt(toggle.closest('.wartung-item').dataset.nr);
             toggleDirektzuenderAvailable(nr);
         });
-    });
-    
-    // Auth Modal Close (Escape)
-    document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape') {
-            hideAuthModal();
-        }
     });
 }
 
