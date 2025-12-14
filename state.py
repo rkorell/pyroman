@@ -9,6 +9,8 @@ Bietet Getter/Setter API für alle Module.
 (c) Dr. Ralf Korell, 2025/26
 
 Erstellt: 08.12.2025, 14:30
+Modified: 12.12.2025, 17:00 - authorized = True (Auth entfernt)
+Modified: 14.12.2025, 14:30 - AP7: authorized = False (Auth wiederhergestellt)
 """
 
 import config

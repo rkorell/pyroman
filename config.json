@@ -19,8 +19,10 @@
   },
   "autorisierung": {
     "auth_required": true,
+    "auth_check": true,
     "auth_code": 7654321,
-    "auth_timeout_sekunden": 5
+    "auth_timeout_sekunden": 5,
+    "arduino_port": "/dev/ttyUSB0"
   },
   "koffer": [
     {"id": 1, "name": "Koffer 1", "koffer_nummer": 100, "enabled": true},

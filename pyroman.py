@@ -12,10 +12,13 @@ Modified: 08.12.2025, 14:30 - Modularisierung: state, fire_control, direktzuende
 Modified: 08.12.2025, 15:45 - scroll_safe_zone an Templates übergeben
 Modified: 08.12.2025, 17:00 - Neue Route /wetter
 Modified: 08.12.2025, 18:00 - Route /wetter holt echte Wetterdaten via wetter_api
+Modified: 12.12.2025, 17:00 - Auth-Logik entfernt (Pi 5 Kompatibilität)
+Modified: 14.12.2025, 14:30 - AP7: Auth-Logik wiederhergestellt mit Plattform-Erkennung
 """
 
 import json
 import os
+import threading
 from flask import Flask, render_template, redirect, url_for, request, jsonify
 from flask_sock import Sock
 
@@ -24,7 +27,7 @@ import state
 import fire_control
 import direktzuender_wartung
 import wetter_api
-from authorize import AuthorizeError
+import authorize
 
 # =============================================================================
 # Flask App Setup
@@ -206,36 +209,40 @@ def handle_set_fire_enabled(message):
     logger.debug(f"Feuer {'aktiviert' if enabled else 'deaktiviert'}")
 
 def handle_auth_start(ws):
-    """Startet Autorisierung."""
-    from authorize import authenticate
+    """
+    Startet Autorisierungsprozess.
     
-    # Broadcast: Warte auf Auth
+    Sendet auth_waiting, wartet auf 433MHz-Signal, 
+    sendet auth_success oder auth_timeout.
+    """
+    logger.debug("Auth-Start angefordert")
+    
+    # Client informieren dass Auth läuft
     try:
         ws.send(json.dumps({'type': 'auth_waiting'}))
     except Exception:
         pass
     
-    try:
-        result = authenticate()
-        
-        if result:
-            state.set_authorized(True)
-            broadcast({'type': 'auth_success'})
-            broadcast(get_full_state_message())
-            logger.info("Autorisierung erfolgreich")
-        else:
-            try:
-                ws.send(json.dumps({'type': 'auth_timeout'}))
-            except Exception:
-                pass
-            logger.debug("Autorisierung Timeout")
-    
-    except AuthorizeError as e:
-        logger.error(f"Autorisierung Fehler: {e}")
+    def do_auth():
+        """Auth in separatem Thread."""
         try:
-            ws.send(json.dumps({'type': 'error', 'message': str(e)}))
-        except Exception:
-            pass
+            success = authorize.authenticate()
+            
+            if success:
+                state.set_authorized(True)
+                broadcast({'type': 'auth_success'})
+                broadcast(get_full_state_message())
+            else:
+                broadcast({'type': 'auth_timeout'})
+        
+        except authorize.AuthorizeError as e:
+            logger.error(f"Auth-Fehler: {e}")
+            broadcast({'type': 'error', 'message': str(e)})
+    
+    # Auth in separatem Thread starten (blockiert nicht WebSocket)
+    thread = threading.Thread(target=do_auth)
+    thread.daemon = True
+    thread.start()
 
 # =============================================================================
 # HTTP Routes
@@ -341,11 +348,13 @@ def main():
             logger.error(f"  - {error}")
     else:
         logger.info("Config OK")
-        
-        # Auth-Status prüfen
-        if not config.is_auth_required():
-            state.set_authorized(True)
-            logger.info("auth_required=False, System ist autorisiert")
+    
+    # Auth-Check beim Start
+    if not config.get_auth_check():
+        logger.info("auth_check=false, System automatisch autorisiert")
+        state.set_authorized(True)
+    else:
+        logger.info("auth_check=true, Autorisierung erforderlich")
     
     # Server starten
     port = 5000

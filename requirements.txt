@@ -1,8 +1,11 @@
 # PyroMan Requirements
 # (c) Dr. Ralf Korell, 2025/26
 # Erstellt: 07.12.2025, 21:00
+# Modified: 12.12.2025, 17:00 - pigpio entfernt (Pi 5 Kompatibilität)
+# Modified: 14.12.2025, 14:30 - AP7: pyserial + pigpio für Auth-Revival
 
 Flask>=2.0
 flask-sock>=0.6.0
-pigpio>=1.78
 requests>=2.28.1
+pyserial>=3.5
+pigpio>=1.78

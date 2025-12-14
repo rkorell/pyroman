@@ -3,16 +3,16 @@
 """
 rf_sender.py - RF-Sender Wrapper für PyroMan
 
-Kapselt _433.tx und liest Parameter aus config.py.
+Nutzt codesend (433Utils) für 433MHz-Übertragung.
 Exponiert Klasse RFSender mit send() und cleanup().
 
 (c) Dr. Ralf Korell, 2025/26
 
 Erstellt: 07.12.2025, 16:45
+Modified: 12.12.2025, 17:00 - Umstellung auf codesend (Pi 4 + Pi 5 kompatibel)
 """
 
-import pigpio
-from lib._433 import tx
+import subprocess
 import config
 
 # Logger
@@ -39,10 +39,8 @@ class RFSender:
         Initialisiert den RF-Sender.
         
         Raises:
-            RFSenderError: Wenn Config ungültig oder pigpiod nicht läuft.
+            RFSenderError: Wenn Config ungültig.
         """
-        self._pi = None
-        self._tx = None
         self._initialized = False
         
         # Config prüfen
@@ -50,59 +48,18 @@ class RFSender:
             errors = config.get_startup_errors()
             raise RFSenderError(f"Config ungültig: {errors}")
         
-        # RF-Parameter laden
-        rf_config = config.get_rf_sender()
-        if rf_config is None:
-            raise RFSenderError("RF-Sender Konfiguration fehlt")
-        
-        self._gpio = rf_config.get("gpio")
-        self._gap = rf_config.get("gap")
-        self._t0 = rf_config.get("t0")
-        self._t1 = rf_config.get("t1")
-        self._repeats = rf_config.get("repeats")
-        self._bits = rf_config.get("bits")
-        
-        logger.debug(f"RF-Parameter: GPIO={self._gpio}, gap={self._gap}, "
-                     f"t0={self._t0}, t1={self._t1}, repeats={self._repeats}")
-        
-        # pigpio verbinden
-        try:
-            self._pi = pigpio.pi()
-            if not self._pi.connected:
-                raise RFSenderError(
-                    "pigpiod nicht erreichbar. "
-                    "Bitte starten mit: sudo pigpiod"
-                )
-        except Exception as e:
-            raise RFSenderError(f"pigpio Verbindung fehlgeschlagen: {e}")
-        
-        # _433.tx initialisieren
-        try:
-            self._tx = tx(
-                self._pi,
-                gpio=self._gpio,
-                repeats=self._repeats,
-                bits=self._bits,
-                gap=self._gap,
-                t0=self._t0,
-                t1=self._t1
-            )
-        except Exception as e:
-            self._pi.stop()
-            raise RFSenderError(f"TX Initialisierung fehlgeschlagen: {e}")
-        
         self._initialized = True
-        logger.debug(f"RFSender initialisiert auf GPIO {self._gpio}")
+        logger.debug("RFSender initialisiert (codesend)")
     
     def send(self, code):
         """
-        Sendet einen RF-Code.
+        Sendet einen RF-Code via codesend.
         
         Args:
             code: Integer-Code zum Senden (z.B. 203)
         
         Raises:
-            RFSenderError: Wenn nicht initialisiert.
+            RFSenderError: Wenn Senden fehlschlägt.
         """
         if not self._initialized:
             raise RFSenderError("RFSender nicht initialisiert")
@@ -110,7 +67,17 @@ class RFSender:
         logger.trace(f"send({code}) Start")
         
         try:
-            self._tx.send(code)
+            result = subprocess.run(
+                ['codesend', str(code)],
+                capture_output=True,
+                timeout=5
+            )
+            if result.returncode != 0:
+                raise RFSenderError(f"codesend Fehler: {result.stderr.decode()}")
+        except subprocess.TimeoutExpired:
+            raise RFSenderError("codesend Timeout")
+        except FileNotFoundError:
+            raise RFSenderError("codesend nicht gefunden - 433Utils installiert?")
         except Exception as e:
             logger.error(f"send({code}) Fehler: {e}")
             raise RFSenderError(f"Senden fehlgeschlagen: {e}")
@@ -121,24 +88,9 @@ class RFSender:
         """
         Beendet den RF-Sender sauber.
         
-        Gibt Ressourcen frei (TX und pigpio-Verbindung).
+        Bei codesend nichts zu tun.
         """
         logger.debug("RFSender cleanup")
-        
-        if self._tx is not None:
-            try:
-                self._tx.cancel()
-            except Exception as e:
-                logger.warning(f"TX cancel Fehler: {e}")
-            self._tx = None
-        
-        if self._pi is not None:
-            try:
-                self._pi.stop()
-            except Exception as e:
-                logger.warning(f"pigpio stop Fehler: {e}")
-            self._pi = None
-        
         self._initialized = False
         logger.debug("RFSender cleanup abgeschlossen")
     

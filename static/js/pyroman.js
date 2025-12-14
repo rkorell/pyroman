@@ -9,6 +9,8 @@
  * Modified: 08.12.2025, 12:35 - Bugfix: Gefeuerte Kanäle werden jetzt gesperrt (disabled)
  * Modified: 08.12.2025, 15:45 - Fire-Master Button, Icon-Wechsel bei Abfeuern, vertikale Listen
  * Modified: 08.12.2025, 17:00 - Auth-Flow UI-Updates (Elemente ein-/ausblenden)
+ * Modified: 12.12.2025, 17:00 - Auth-Logik entfernt (Pi 5 Kompatibilität)
+ * Modified: 14.12.2025, 14:30 - AP7: Auth-Logik wiederhergestellt
  */
 
 // =============================================================================
