@@ -1,7 +1,7 @@
 [
   {
     "nr": 1,
-    "available": false
+    "available": true
   },
   {
     "nr": 2,
@@ -9,7 +9,7 @@
   },
   {
     "nr": 3,
-    "available": true
+    "available": false
   },
   {
     "nr": 4,

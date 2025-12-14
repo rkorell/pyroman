@@ -15,6 +15,7 @@ Plattform-Erkennung:
 Erstellt: 07.12.2025, 17:00
 Modified: 14.12.2025, 14:30 - AP7: Plattform-Erkennung Pi4/Pi5, Arduino Serial Bridge
 Modified: 14.12.2025, 14:45 - AP7: Arduino Reset-Zeit 2s, Buffer leeren, #-Zeilen ignorieren
+Modified: 14.12.2025, 15:30 - AP7: get_auth_check() durch is_auth_required() ersetzt
 """
 
 import time
@@ -67,8 +68,8 @@ def authenticate(timeout=None):
     """
     
     # Prüfen ob Auth überhaupt erforderlich
-    if not config.get_auth_check():
-        logger.debug("auth_check=False, überspringe Autorisierung")
+    if not config.is_auth_required():
+        logger.debug("auth_required=false, überspringe Autorisierung")
         return True
     
     # Config prüfen

@@ -11,6 +11,7 @@ Stellt Getter-Funktionen für alle Module bereit.
 Erstellt: 07.12.2025, 15:45
 Modified: 08.12.2025, 15:45 - get_ui_config() hinzugefügt
 Modified: 14.12.2025, 14:30 - AP7: get_auth_check(), get_arduino_port() hinzugefügt
+Modified: 14.12.2025, 15:30 - AP7: get_auth_check() entfernt, nur is_auth_required() verwenden
 """
 
 import json
@@ -277,12 +278,6 @@ def is_auth_required():
     if not _config_valid:
         return True  # Im Zweifel: ja
     return _config.get("autorisierung", {}).get("auth_required", True)
-
-def get_auth_check():
-    """Gibt zurück ob Auth-Check beim Start durchgeführt werden soll."""
-    if not _config_valid:
-        return True  # Im Zweifel: ja
-    return _config.get("autorisierung", {}).get("auth_check", True)
 
 def get_arduino_port():
     """Gibt Arduino Serial-Port zurück (für Pi 5)."""

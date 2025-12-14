@@ -14,6 +14,7 @@ Modified: 08.12.2025, 17:00 - Neue Route /wetter
 Modified: 08.12.2025, 18:00 - Route /wetter holt echte Wetterdaten via wetter_api
 Modified: 12.12.2025, 17:00 - Auth-Logik entfernt (Pi 5 Kompatibilität)
 Modified: 14.12.2025, 14:30 - AP7: Auth-Logik wiederhergestellt mit Plattform-Erkennung
+Modified: 14.12.2025, 15:30 - AP7: get_auth_check() durch is_auth_required() ersetzt
 """
 
 import json
@@ -350,11 +351,11 @@ def main():
         logger.info("Config OK")
     
     # Auth-Check beim Start
-    if not config.get_auth_check():
-        logger.info("auth_check=false, System automatisch autorisiert")
+    if not config.is_auth_required():
+        logger.info("auth_required=false, System automatisch autorisiert")
         state.set_authorized(True)
     else:
-        logger.info("auth_check=true, Autorisierung erforderlich")
+        logger.info("auth_required=true, Autorisierung erforderlich")
     
     # Server starten
     port = 5000

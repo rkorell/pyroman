@@ -18,8 +18,7 @@
     "gpio": 27
   },
   "autorisierung": {
-    "auth_required": true,
-    "auth_check": true,
+    "auth_required": false,
     "auth_code": 7654321,
     "auth_timeout_sekunden": 5,
     "arduino_port": "/dev/ttyUSB0"
