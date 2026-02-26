@@ -15,6 +15,7 @@ Modified: 08.12.2025, 18:00 - Route /wetter holt echte Wetterdaten via wetter_ap
 Modified: 12.12.2025, 17:00 - Auth-Logik entfernt (Pi 5 Kompatibilität)
 Modified: 14.12.2025, 14:30 - AP7: Auth-Logik wiederhergestellt mit Plattform-Erkennung
 Modified: 14.12.2025, 15:30 - AP7: get_auth_check() durch is_auth_required() ersetzt
+Modified: 26.02.2026, 21:30 - Box-Test/Config Tab: Route, WS-Handler
 """
 
 import json
@@ -127,6 +128,8 @@ def handle_ws_message(ws, message):
         handle_reset_all()
     elif msg_type == 'set_fire_enabled':
         handle_set_fire_enabled(message)
+    elif msg_type == 'boxtest_command':
+        handle_boxtest_command(message)
     elif msg_type == 'auth_start':
         handle_auth_start(ws)
     else:
@@ -208,6 +211,52 @@ def handle_set_fire_enabled(message):
         'enabled': enabled
     })
     logger.debug(f"Feuer {'aktiviert' if enabled else 'deaktiviert'}")
+
+def handle_boxtest_command(message):
+    """Verarbeitet Box-Test/Config-Befehle."""
+    # Fire-Master für ALLE Aktionen (global, nicht tab-spezifisch)
+    if not state.is_authorized() or not state.is_fire_enabled():
+        broadcast({'type': 'error', 'message': 'Feuer nicht freigegeben'})
+        return
+
+    command = message.get('command')
+
+    code_map = {
+        'box_test': lambda m: 9999000 + m.get('box', 0),
+        'auto_off': lambda m: 8000010,
+        'auto_on': lambda m: 8000011,
+        'group_async': lambda m: 8000031,
+        'group_sync': lambda m: 8000032,
+        'eeprom_read': lambda m: 8000021,
+        'eeprom_clear': lambda m: 8000022,
+        'wait_time': lambda m: 8100001 + m.get('value', 750),
+    }
+
+    code_fn = code_map.get(command)
+    if not code_fn:
+        logger.warning(f"Unbekannter BoxTest-Befehl: {command}")
+        return
+
+    code = code_fn(message)
+
+    sender = fire_control.get_rf_sender()
+    if sender is None:
+        broadcast({'type': 'error', 'message': 'RF-Sender nicht verfügbar'})
+        return
+
+    try:
+        sender.send(code)
+        logger.debug(f"BoxTest: {command}, Code {code}")
+        # Originalparameter für Status-Anzeige mit zurückgeben
+        response = {'type': 'boxtest_response', 'command': command, 'code': code}
+        if 'box' in message:
+            response['box'] = message['box']
+        if 'value' in message:
+            response['value'] = message['value']
+        broadcast(response)
+    except Exception as e:
+        logger.error(f"BoxTest Sendefehler: {e}")
+        broadcast({'type': 'error', 'message': f'Sendefehler: {e}'})
 
 def handle_auth_start(ws):
     """
@@ -299,15 +348,23 @@ def wetter_page():
     """Wetter-Seite - holt Daten bei jedem Aufruf."""
     if not config.is_valid():
         return render_template('error.html', errors=config.get_startup_errors())
-    
+
     # Wetterdaten bei Seitenaufruf laden
     weather_data = wetter_api.fetch_all_weather_data()
-    
+
     return render_template('wetter.html',
                            active_page='wetter',
                            pws=weather_data.get('pws'),
                            forecast=weather_data.get('forecast'),
                            weather_error=weather_data.get('error'))
+
+@app.route('/boxtest')
+def boxtest_page():
+    """Box-Test/Config - Koffer testen und konfigurieren."""
+    if not config.is_valid():
+        return render_template('error.html', errors=config.get_startup_errors())
+
+    return render_template('boxtest.html', active_page='boxtest')
 
 # =============================================================================
 # API Routes

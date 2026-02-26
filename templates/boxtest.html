@@ -1,0 +1,96 @@
+<!--
+    boxtest.html - PyroMan Box-Test/Config
+
+    Koffer testen (Relais-Durchlauf) und konfigurieren
+    (Auto-Modus, Gruppenfeuer, Wartezeit, EEprom)
+
+    (c) Dr. Ralf Korell, 2025/26
+
+    Erstellt: 26.02.2026, 21:30
+-->
+{% extends "base.html" %}
+
+{% block title %}Box-Test/Config{% endblock %}
+
+{% block extra_css %}
+<style>
+    #reset-all-btn { display: none; }
+    .fire-master-btn { flex: 1; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="fade-in">
+    <!-- Section 1: Koffer-Test -->
+    <div class="section-header">
+        <h2 class="section-title">Koffer-Test</h2>
+        <div class="section-divider"></div>
+        <span class="section-count">Relais-Durchlauf alle 8 Kanäle</span>
+    </div>
+
+    <div class="boxtest-grid">
+        <button class="btn btn-primary boxtest-btn" onclick="sendBoxTestCommand('box_test', {box: 1})">Box 1</button>
+        <button class="btn btn-primary boxtest-btn" onclick="sendBoxTestCommand('box_test', {box: 2})">Box 2</button>
+        <button class="btn btn-primary boxtest-btn" onclick="sendBoxTestCommand('box_test', {box: 3})">Box 3</button>
+        <button class="btn btn-primary boxtest-btn" onclick="sendBoxTestCommand('box_test', {box: 4})">Box 4</button>
+        <button class="btn btn-primary boxtest-btn" onclick="sendBoxTestCommand('box_test', {box: 5})">Box 5</button>
+    </div>
+
+    <!-- Section 2: Konfiguration -->
+    <div class="section-header">
+        <h2 class="section-title">Konfiguration</h2>
+        <div class="section-divider"></div>
+    </div>
+
+    <div class="boxtest-config-section">
+        <div class="boxtest-row">
+            <span class="boxtest-label">Auto-Modus</span>
+            <div class="boxtest-btn-pair">
+                <button class="btn btn-outline boxtest-btn-sm" onclick="sendBoxTestCommand('auto_off')">Auto OFF</button>
+                <button class="btn btn-outline boxtest-btn-sm" onclick="sendBoxTestCommand('auto_on')">Auto ON</button>
+            </div>
+        </div>
+
+        <div class="boxtest-row">
+            <span class="boxtest-label">Gruppenfeuer</span>
+            <div class="boxtest-btn-pair">
+                <button class="btn btn-outline boxtest-btn-sm" onclick="sendBoxTestCommand('group_async')">Asynchron</button>
+                <button class="btn btn-outline boxtest-btn-sm" onclick="sendBoxTestCommand('group_sync')">Synchron</button>
+            </div>
+        </div>
+
+        <div class="boxtest-row boxtest-slider-row">
+            <span class="boxtest-label">Wartezeit</span>
+            <div class="boxtest-slider-container">
+                <input type="range" id="wait-time-slider" class="boxtest-slider"
+                       min="0" max="12000" step="50" value="750"
+                       oninput="document.getElementById('wait-time-value').textContent = this.value + ' ms'">
+                <span id="wait-time-value" class="boxtest-slider-value">750 ms</span>
+            </div>
+            <button class="btn btn-outline boxtest-btn-sm" onclick="sendWaitTime()">Setzen</button>
+        </div>
+    </div>
+
+    <!-- Section 3: EEprom -->
+    <div class="section-header">
+        <h2 class="section-title">EEprom</h2>
+        <div class="section-divider"></div>
+        <span class="section-count">Ausgabe auf dem Koffer-Display</span>
+    </div>
+
+    <div class="boxtest-config-section">
+        <div class="boxtest-row">
+            <span class="boxtest-label">Gespeicherte Feuerbefehle</span>
+            <div class="boxtest-btn-pair">
+                <button class="btn btn-outline boxtest-btn-sm" onclick="sendBoxTestCommand('eeprom_read')">Lesen</button>
+                <button class="btn btn-outline boxtest-btn-sm boxtest-btn-locked" disabled title="Deaktiviert (Sicherheit)">Löschen</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Status-Zeile -->
+    <div class="boxtest-status" id="boxtest-status">
+        Bereit
+    </div>
+</div>
+{% endblock %}

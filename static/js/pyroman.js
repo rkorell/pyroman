@@ -11,6 +11,7 @@
  * Modified: 08.12.2025, 17:00 - Auth-Flow UI-Updates (Elemente ein-/ausblenden)
  * Modified: 12.12.2025, 17:00 - Auth-Logik entfernt (Pi 5 Kompatibilität)
  * Modified: 14.12.2025, 14:30 - AP7: Auth-Logik wiederhergestellt
+ * Modified: 26.02.2026, 21:30 - Box-Test/Config Tab: sendBoxTestCommand, Slider, EEprom-Confirm
  */
 
 // =============================================================================
@@ -98,6 +99,9 @@ function handleServerMessage(data) {
             break;
         case 'auth_timeout':
             handleAuthTimeout();
+            break;
+        case 'boxtest_response':
+            handleBoxTestResponse(data);
             break;
         case 'error':
             showError(data.message);
@@ -485,6 +489,56 @@ function toggleDirektzuenderAvailable(nr) {
             console.error('Error:', err);
             showToast('Fehler beim Speichern', 'danger');
         });
+    }
+}
+
+// =============================================================================
+// Box-Test/Config
+// =============================================================================
+
+const boxTestLabels = {
+    'box_test': (data) => `Box ${data.box} Test gesendet`,
+    'auto_off': () => 'Auto OFF gesendet',
+    'auto_on': () => 'Auto ON gesendet',
+    'group_async': () => 'Gruppen Asynchron gesendet',
+    'group_sync': () => 'Gruppen Synchron gesendet',
+    'eeprom_read': () => 'EEprom lesen gesendet (Ausgabe auf Koffer-Display)',
+    'eeprom_clear': () => 'EEprom löschen gesendet',
+    'wait_time': (data) => `Wartezeit ${data.value} ms gesendet`
+};
+
+function sendBoxTestCommand(command, params) {
+    if (!PyroMan.authorized || !PyroMan.fireEnabled) {
+        showToast('Feuer nicht freigegeben', 'danger');
+        return;
+    }
+    sendMessage('boxtest_command', { command, ...params });
+}
+
+function sendWaitTime() {
+    const slider = document.getElementById('wait-time-slider');
+    if (slider) {
+        sendBoxTestCommand('wait_time', { value: parseInt(slider.value) });
+    }
+}
+
+function confirmEepromClear() {
+    if (!PyroMan.authorized || !PyroMan.fireEnabled) {
+        showToast('Feuer nicht freigegeben', 'danger');
+        return;
+    }
+    if (confirm('EEprom wirklich löschen? Gespeicherte Feuerbefehle werden gelöscht.')) {
+        sendBoxTestCommand('eeprom_clear');
+    }
+}
+
+function handleBoxTestResponse(data) {
+    const statusEl = document.getElementById('boxtest-status');
+    if (statusEl) {
+        const labelFn = boxTestLabels[data.command];
+        statusEl.textContent = labelFn ? labelFn(data) : `${data.command} gesendet (Code ${data.code})`;
+        statusEl.classList.add('boxtest-status-flash');
+        setTimeout(() => statusEl.classList.remove('boxtest-status-flash'), 600);
     }
 }
 

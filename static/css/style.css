@@ -10,6 +10,7 @@
  * Modified: 08.12.2025, 17:00 - Zweizeiliger Header, Nav gleichmäßig, Fire-Master 2/3 + Reset 1/3, Auth-Flow
  * Modified: 08.12.2025, 18:00 - Wetter-Styles: PWS-Card, Forecast-Tabelle
  * Modified: 08.12.2025, 19:30 - Logo-Text Gold-Farbverlauf (#D4A900 → #FFAA00)
+ * Modified: 26.02.2026, 21:30 - Box-Test/Config Tab Styles
  */
 
 /* =============================================================================
@@ -1123,6 +1124,120 @@ a:hover {
 
 .hidden { display: none !important; }
 .visible { display: block !important; }
+
+/* =============================================================================
+   Box-Test/Config
+   ============================================================================= */
+
+.boxtest-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--spacing-md);
+    margin-bottom: var(--spacing-lg);
+}
+
+.boxtest-btn {
+    min-height: 60px;
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+.boxtest-config-section {
+    background: var(--surface-color);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--border-color);
+    padding: var(--spacing-md);
+    margin-bottom: var(--spacing-lg);
+}
+
+.boxtest-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--spacing-sm) 0;
+}
+
+.boxtest-row + .boxtest-row {
+    border-top: 1px solid var(--border-color);
+}
+
+.boxtest-label {
+    font-weight: 500;
+    color: var(--text-primary);
+    flex-shrink: 0;
+    margin-right: var(--spacing-md);
+}
+
+.boxtest-btn-pair {
+    display: flex;
+    gap: var(--spacing-sm);
+}
+
+.boxtest-btn-sm {
+    min-height: 44px;
+    padding: var(--spacing-xs) var(--spacing-md);
+    font-size: 0.9rem;
+}
+
+.boxtest-btn-locked {
+    opacity: 0.3;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+.boxtest-slider-row {
+    flex-wrap: wrap;
+    gap: var(--spacing-sm);
+}
+
+.boxtest-slider-container {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    min-width: 200px;
+}
+
+.boxtest-slider {
+    flex: 1;
+    height: 8px;
+    -webkit-appearance: none;
+    appearance: none;
+    background: var(--border-color);
+    border-radius: 4px;
+    outline: none;
+}
+
+.boxtest-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: var(--accent-primary);
+    cursor: pointer;
+}
+
+.boxtest-slider-value {
+    min-width: 70px;
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+
+.boxtest-status {
+    text-align: center;
+    padding: var(--spacing-md);
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    border-top: 1px solid var(--border-color);
+    margin-top: var(--spacing-md);
+    transition: color 0.3s ease;
+}
+
+.boxtest-status-flash {
+    color: var(--accent-primary);
+}
 
 /* =============================================================================
    Desktop Anpassungen

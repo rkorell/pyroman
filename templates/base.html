@@ -9,6 +9,7 @@
     Modified: 08.12.2025, 17:00 - Zweizeiliger Header, Auth-Flow, Navigation nur bei Auth
     Modified: 12.12.2025, 17:00 - Auth-Elemente entfernt (Pi 5 Kompatibilität)
     Modified: 14.12.2025, 14:30 - AP7: Auth-Elemente wiederhergestellt
+    Modified: 26.02.2026, 21:30 - Nav-Link "Box-Test" hinzugefügt
 -->
 <html lang="de">
 <head>
@@ -50,6 +51,7 @@
                 <a href="{{ url_for('koffer_page') }}" class="nav-link {{ 'active' if active_page == 'koffer' else '' }}">Koffer</a>
                 <a href="{{ url_for('direktzuender_page') }}" class="nav-link {{ 'active' if active_page == 'direktzuender' else '' }}">Direkt</a>
                 <a href="{{ url_for('wartung_page') }}" class="nav-link {{ 'active' if active_page == 'wartung' else '' }}">Wartung</a>
+                <a href="{{ url_for('boxtest_page') }}" class="nav-link {{ 'active' if active_page == 'boxtest' else '' }}">Box-Test/Config</a>
                 <a href="{{ url_for('wetter_page') }}" class="nav-link {{ 'active' if active_page == 'wetter' else '' }}">Wetter</a>
             </nav>
         </header>

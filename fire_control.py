@@ -9,6 +9,7 @@ Hält RF-Sender Instanz.
 (c) Dr. Ralf Korell, 2025/26
 
 Erstellt: 08.12.2025, 14:30
+Modified: 26.02.2026, 21:30 - get_rf_sender() öffentlich exponiert für BoxTest-Tab
 """
 
 import config
@@ -36,6 +37,10 @@ def _get_rf_sender():
             logger.error(f"RF-Sender Fehler: {e}")
             return None
     return _rf_sender
+
+def get_rf_sender():
+    """Öffentlicher Zugriff auf den RF-Sender (lazy init)."""
+    return _get_rf_sender()
 
 # =============================================================================
 # Berechtigungsprüfung
