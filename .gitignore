@@ -2,6 +2,11 @@
 
 # Secrets (API-Keys, Passwörter)
 secrets.json
+config.json
+
+# Claude Code (projektspezifisch, nicht ins Repo)
+CLAUDE.md
+.claude/
 
 # Python
 __pycache__/
