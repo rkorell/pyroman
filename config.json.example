@@ -4,6 +4,7 @@
   "_instructions": "Kopieren nach config.json und anpassen!",
   "_created": "07.12.2025, 15:45",
   "_modified": "08.12.2025, 15:45 - UI Parameter scroll_safe_zone hinzugefügt",
+  "_modified2": "26.02.2026, 17:30 - AP1: rf_sender/rf_empfaenger entfernt (jetzt in codesend.py/getcode.py)",
 
   "system": {
     "name": "PyroMan",
@@ -12,19 +13,6 @@
 
   "logging": {
     "level": "DEBUG"
-  },
-
-  "rf_sender": {
-    "gpio": 21,
-    "gap": 10850,
-    "t0": 350,
-    "t1": 1050,
-    "repeats": 10,
-    "bits": 24
-  },
-
-  "rf_empfaenger": {
-    "gpio": 27
   },
 
   "autorisierung": {

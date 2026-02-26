@@ -12,6 +12,8 @@ Erstellt: 07.12.2025, 15:45
 Modified: 08.12.2025, 15:45 - get_ui_config() hinzugefügt
 Modified: 14.12.2025, 14:30 - AP7: get_auth_check(), get_arduino_port() hinzugefügt
 Modified: 14.12.2025, 15:30 - AP7: get_auth_check() entfernt, nur is_auth_required() verwenden
+Modified: 26.02.2026, 17:30 - AP1: RF-Sender/Empfänger Validierung+Getter entfernt (jetzt in codesend.py/getcode.py gekapselt)
+Modified: 26.02.2026, 17:30 - AP1: get_arduino_port() entfernt (Arduino-Bridge entfällt)
 """
 
 import json
@@ -88,26 +90,6 @@ def _validate_required_field(section, field_name, field_type, section_name):
     
     return True
 
-def _validate_rf_sender():
-    """Validiert rf_sender Sektion."""
-    if not _validate_required_section("rf_sender"):
-        return
-    
-    section = _config["rf_sender"]
-    _validate_required_field(section, "gpio", "numeric", "rf_sender")
-    _validate_required_field(section, "gap", "numeric", "rf_sender")
-    _validate_required_field(section, "t0", "numeric", "rf_sender")
-    _validate_required_field(section, "t1", "numeric", "rf_sender")
-    _validate_required_field(section, "repeats", "numeric", "rf_sender")
-    _validate_required_field(section, "bits", "numeric", "rf_sender")
-
-def _validate_rf_empfaenger():
-    """Validiert rf_empfaenger Sektion."""
-    if not _validate_required_section("rf_empfaenger"):
-        return
-    
-    section = _config["rf_empfaenger"]
-    _validate_required_field(section, "gpio", "numeric", "rf_empfaenger")
 
 def _validate_autorisierung():
     """Validiert autorisierung Sektion."""
@@ -215,8 +197,6 @@ def _load_config():
     _setup_logging()
     
     # Validierungen
-    _validate_rf_sender()
-    _validate_rf_empfaenger()
     _validate_autorisierung()
     _validate_koffer()
     _validate_direktzuender()
@@ -243,22 +223,6 @@ def get_config_path():
     """Gibt Pfad zur config.json zurück."""
     return _config_path
 
-# --- RF Sender ---
-
-def get_rf_sender():
-    """Gibt rf_sender Konfiguration zurück."""
-    if not _config_valid:
-        return None
-    return _config.get("rf_sender", {}).copy()
-
-# --- RF Empfänger ---
-
-def get_rf_empfaenger():
-    """Gibt rf_empfaenger Konfiguration zurück."""
-    if not _config_valid:
-        return None
-    return _config.get("rf_empfaenger", {}).copy()
-
 # --- Autorisierung ---
 
 def get_auth_code():
@@ -278,12 +242,6 @@ def is_auth_required():
     if not _config_valid:
         return True  # Im Zweifel: ja
     return _config.get("autorisierung", {}).get("auth_required", True)
-
-def get_arduino_port():
-    """Gibt Arduino Serial-Port zurück (für Pi 5)."""
-    if not _config_valid:
-        return "/dev/ttyUSB0"
-    return _config.get("autorisierung", {}).get("arduino_port", "/dev/ttyUSB0")
 
 # --- Koffer ---
 

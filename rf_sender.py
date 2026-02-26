@@ -10,6 +10,7 @@ Exponiert Klasse RFSender mit send() und cleanup().
 
 Erstellt: 07.12.2025, 16:45
 Modified: 12.12.2025, 17:00 - Umstellung auf codesend (Pi 4 + Pi 5 kompatibel)
+Modified: 26.02.2026, 17:30 - AP1: Fehlermeldung aktualisiert (codesend.py statt 433Utils)
 """
 
 import subprocess
@@ -77,7 +78,7 @@ class RFSender:
         except subprocess.TimeoutExpired:
             raise RFSenderError("codesend Timeout")
         except FileNotFoundError:
-            raise RFSenderError("codesend nicht gefunden - 433Utils installiert?")
+            raise RFSenderError("codesend nicht gefunden - Symlink /usr/local/bin/codesend vorhanden?")
         except Exception as e:
             logger.error(f"send({code}) Fehler: {e}")
             raise RFSenderError(f"Senden fehlgeschlagen: {e}")

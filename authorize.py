@@ -6,9 +6,7 @@ authorize.py - Autorisierung per 433MHz für PyroMan
 Wartet auf 433MHz-Signal vom Handsender und validiert gegen auth_code.
 Flask/Aufrufer weiß nichts von 433MHz - nur True/False.
 
-Plattform-Erkennung:
-- Pi 4: pigpio + lib/_433.py (direkter GPIO-Empfang)
-- Pi 5: Arduino Serial Bridge (433EmpfaengerBridgeFuerPi.ino)
+Nutzt gpiod v2 Edge-Detection auf GPIO 27 (gleiche Logik wie getcode.py).
 
 (c) Dr. Ralf Korell, 2025/26
 
@@ -16,13 +14,33 @@ Erstellt: 07.12.2025, 17:00
 Modified: 14.12.2025, 14:30 - AP7: Plattform-Erkennung Pi4/Pi5, Arduino Serial Bridge
 Modified: 14.12.2025, 14:45 - AP7: Arduino Reset-Zeit 2s, Buffer leeren, #-Zeilen ignorieren
 Modified: 14.12.2025, 15:30 - AP7: get_auth_check() durch is_auth_required() ersetzt
+Modified: 26.02.2026, 17:30 - AP1: Komplett-Umbau auf gpiod v2 (pigpio/Arduino/Plattform-Erkennung entfernt)
 """
 
 import time
+import gpiod
+from gpiod.line import Edge
 import config
 
 # Logger
 logger = config.get_logger(__name__)
+
+# GPIO-Pin für 433MHz-Empfänger
+RX_GPIO = 27
+GPIO_CHIP = '/dev/gpiochip0'
+
+# rc-switch Dekodier-Parameter
+MAX_CHANGES = 67
+TOLERANCE = 80  # Prozent
+
+PROTOCOLS = [
+    None,
+    {'pulselength': 350, 'sync': (1, 31), 'zero': (1, 3), 'one': (3, 1)},
+    {'pulselength': 650, 'sync': (1, 10), 'zero': (1, 2), 'one': (2, 1)},
+    {'pulselength': 100, 'sync': (30, 71), 'zero': (4, 11), 'one': (9, 6)},
+    {'pulselength': 380, 'sync': (1, 6), 'zero': (1, 3), 'one': (3, 1)},
+    {'pulselength': 500, 'sync': (6, 14), 'zero': (1, 2), 'one': (2, 1)},
+]
 
 
 class AuthorizeError(Exception):
@@ -30,234 +48,145 @@ class AuthorizeError(Exception):
     pass
 
 
-def detect_platform():
-    """
-    Erkennt Pi 4 vs Pi 5 via device-tree.
-    
-    Returns:
-        'pi4', 'pi5', oder 'unknown'
-    """
-    try:
-        with open('/proc/device-tree/model', 'r') as f:
-            model = f.read().strip('\x00')
-        if 'Pi 5' in model:
-            return 'pi5'
-        elif 'Pi 4' in model:
-            return 'pi4'
+def _try_decode(timings, pnum, change_count_val):
+    """Versucht einen empfangenen Puls-Train als rc-switch Code zu dekodieren."""
+    proto = PROTOCOLS[pnum]
+    code = 0
+    delay = timings[0] // proto['sync'][1]
+    delay_tol = delay * TOLERANCE // 100
+
+    for i in range(1, change_count_val, 2):
+        zh = proto['zero'][0] * delay
+        zl = proto['zero'][1] * delay
+        oh = proto['one'][0] * delay
+        ol = proto['one'][1] * delay
+
+        if abs(timings[i] - zh) < delay_tol and abs(timings[i+1] - zl) < delay_tol:
+            code <<= 1
+        elif abs(timings[i] - oh) < delay_tol and abs(timings[i+1] - ol) < delay_tol:
+            code <<= 1
+            code |= 1
         else:
-            return 'unknown'
-    except Exception:
-        return 'unknown'
+            return None
+
+    if change_count_val > 6 and code != 0:
+        bitlength = change_count_val // 2
+        return {'code': code, 'bitlength': bitlength, 'delay': delay, 'protocol': pnum}
+    return None
 
 
 def authenticate(timeout=None):
     """
     Wartet auf 433MHz-Signal und prüft gegen auth_code.
-    
+
     Blockiert bis korrekter Code empfangen oder Timeout erreicht.
-    Wählt automatisch die richtige Methode (Pi 4: pigpio, Pi 5: Arduino).
-    
+
     Args:
         timeout: Sekunden zu warten (default aus config)
-    
+
     Returns:
         True wenn korrekter Code empfangen, sonst False
-    
+
     Raises:
         AuthorizeError: Bei Config- oder Hardware-Fehlern
     """
-    
+
     # Prüfen ob Auth überhaupt erforderlich
     if not config.is_auth_required():
         logger.debug("auth_required=false, überspringe Autorisierung")
         return True
-    
+
     # Config prüfen
     if not config.is_valid():
         errors = config.get_startup_errors()
         raise AuthorizeError(f"Config ungültig: {errors}")
-    
+
     # Parameter laden
     auth_code = config.get_auth_code()
     if auth_code is None:
         raise AuthorizeError("auth_code nicht konfiguriert")
-    
+
     if timeout is None:
         timeout = config.get_auth_timeout()
-    
-    # Plattform erkennen
-    platform = detect_platform()
-    logger.debug(f"Plattform erkannt: {platform}")
-    
-    if platform == 'pi5':
-        return _authenticate_arduino(auth_code, timeout)
-    elif platform == 'pi4':
-        return _authenticate_pigpio(auth_code, timeout)
-    else:
-        logger.warning(f"Unbekannte Plattform: {platform}, versuche Arduino")
-        return _authenticate_arduino(auth_code, timeout)
+
+    return _authenticate_gpiod(auth_code, timeout)
 
 
-def _authenticate_pigpio(auth_code, timeout):
+def _authenticate_gpiod(auth_code, timeout):
     """
-    Authentifizierung via pigpio (Pi 4).
-    
+    Authentifizierung via gpiod v2 Edge-Detection.
+
+    Gleiche RX-Logik wie getcode.py: Lauscht auf GPIO 27, dekodiert
+    rc-switch Protokolle, vergleicht mit auth_code.
+
     Args:
-        auth_code: Erwarteter Code
+        auth_code: Erwarteter Code (int)
         timeout: Timeout in Sekunden
-    
+
     Returns:
-        True wenn korrekter Code empfangen
+        True wenn korrekter Code empfangen, sonst False
     """
-    import pigpio
-    from lib._433 import rx
-    
-    rf_config = config.get_rf_empfaenger()
-    if rf_config is None:
-        raise AuthorizeError("RF-Empfänger Konfiguration fehlt")
-    
-    gpio = rf_config.get("gpio")
-    
-    logger.debug(f"Pi 4 Auth: Warte {timeout}s auf GPIO {gpio}")
-    
-    # Zustand für Callback
-    result = {"authenticated": False, "done": False}
-    
-    def on_code_received(code, bits, gap, t0, t1):
-        """Callback wenn Code empfangen."""
-        logger.trace(f"Code empfangen: {code} (bits={bits})")
-        
-        if code == auth_code:
-            logger.debug("Autorisierung erfolgreich")
-            result["authenticated"] = True
-            result["done"] = True
-    
-    # pigpio verbinden
-    pi = None
-    receiver = None
-    
+    logger.debug(f"Auth: Warte {timeout}s auf Code {auth_code} (GPIO {RX_GPIO})")
+
     try:
-        pi = pigpio.pi()
-        if not pi.connected:
-            raise AuthorizeError(
-                "pigpiod nicht erreichbar. "
-                "Bitte starten mit: sudo pigpiod"
-            )
-        
-        # Empfänger starten
-        receiver = rx(pi, gpio=gpio, callback=on_code_received)
-        
-        # Warten bis Auth oder Timeout
-        start_time = time.time()
-        while not result["done"]:
-            elapsed = time.time() - start_time
-            if elapsed >= timeout:
-                logger.debug("Autorisierung Timeout")
-                break
-            time.sleep(0.05)  # 50ms Polling
-        
-        return result["authenticated"]
-    
+        request = gpiod.request_lines(
+            GPIO_CHIP,
+            consumer="pyroman_auth",
+            config={RX_GPIO: gpiod.LineSettings(edge_detection=Edge.BOTH)}
+        )
+    except Exception as e:
+        raise AuthorizeError(f"GPIO {RX_GPIO} nicht verfügbar: {e}")
+
+    timings = [0] * (MAX_CHANGES + 1)
+    last_timestamp = 0
+    change_count = 0
+    repeat_count = 0
+
+    start = time.time()
+
+    try:
+        while time.time() - start < timeout:
+            if request.wait_edge_events(timeout=0.5):
+                events = request.read_edge_events()
+                for event in events:
+                    timestamp_us = event.timestamp_ns // 1000
+                    duration = timestamp_us - last_timestamp
+
+                    if duration > 5000:
+                        if abs(duration - timings[0]) < 200:
+                            repeat_count += 1
+                            cc = change_count - 1
+                            if repeat_count == 2:
+                                for pnum in range(1, len(PROTOCOLS)):
+                                    result = _try_decode(timings, pnum, cc)
+                                    if result:
+                                        logger.debug(f"Code empfangen: {result['code']} "
+                                                     f"(Protocol: {result['protocol']}, "
+                                                     f"Bits: {result['bitlength']})")
+                                        if result['code'] == auth_code:
+                                            logger.debug("Autorisierung erfolgreich")
+                                            return True
+                                        break
+                                repeat_count = 0
+                        change_count = 0
+
+                    if change_count >= MAX_CHANGES:
+                        change_count = 0
+                        repeat_count = 0
+                    timings[change_count] = duration
+                    change_count += 1
+                    last_timestamp = timestamp_us
+
+        logger.debug("Autorisierung Timeout")
+        return False
+
     except AuthorizeError:
         raise
     except Exception as e:
         raise AuthorizeError(f"Autorisierung fehlgeschlagen: {e}")
-    
-    finally:
-        # Aufräumen
-        if receiver is not None:
-            try:
-                receiver.cancel()
-            except Exception as e:
-                logger.warning(f"RX cancel Fehler: {e}")
-        
-        if pi is not None:
-            try:
-                pi.stop()
-            except Exception as e:
-                logger.warning(f"pigpio stop Fehler: {e}")
 
-
-def _authenticate_arduino(auth_code, timeout):
-    """
-    Authentifizierung via Arduino Serial Bridge (Pi 5).
-    
-    Protokoll:
-    - Warte 2s für Arduino Reset
-    - Buffer leeren (# Zeilen ignorieren)
-    - Sende "SCAN\n" an Arduino
-    - Arduino antwortet mit "<code>\n" wenn Signal empfangen
-    - Zeilen mit "#" sind Status-Meldungen und werden ignoriert
-    
-    Args:
-        auth_code: Erwarteter Code
-        timeout: Timeout in Sekunden
-    
-    Returns:
-        True wenn korrekter Code empfangen
-    """
-    import serial
-    
-    arduino_port = config.get_arduino_port()
-    
-    logger.debug(f"Pi 5 Auth: Warte {timeout}s auf Arduino ({arduino_port})")
-    
-    ser = None
-    
-    try:
-        ser = serial.Serial(arduino_port, 9600, timeout=0.5)
-        
-        # Arduino Reset abwarten (2 Sekunden)
-        logger.debug("Warte auf Arduino Reset (2s)...")
-        time.sleep(2)
-        
-        # Buffer leeren - alle Startup-Meldungen lesen und ignorieren
-        while ser.in_waiting > 0:
-            line = ser.readline().decode('utf-8', errors='replace').strip()
-            logger.trace(f"Arduino Startup: {line}")
-        
-        # Scan-Modus starten
-        ser.write(b'SCAN\n')
-        ser.flush()
-        logger.debug("SCAN Befehl gesendet")
-        
-        # Warten auf Code
-        start_time = time.time()
-        while True:
-            elapsed = time.time() - start_time
-            if elapsed >= timeout:
-                logger.debug("Autorisierung Timeout")
-                return False
-            
-            if ser.in_waiting > 0:
-                line = ser.readline().decode('utf-8', errors='replace').strip()
-                
-                # Zeilen mit # sind Status-Meldungen - ignorieren
-                if line.startswith('#'):
-                    logger.trace(f"Arduino Status: {line}")
-                    continue
-                
-                if line:
-                    try:
-                        received_code = int(line)
-                        logger.debug(f"Code empfangen: {received_code}")
-                        
-                        if received_code == auth_code:
-                            logger.debug("Autorisierung erfolgreich")
-                            return True
-                    except ValueError:
-                        logger.trace(f"Ignoriere ungültige Zeile: {line}")
-            
-            time.sleep(0.05)  # 50ms Polling
-    
-    except serial.SerialException as e:
-        raise AuthorizeError(f"Arduino Serial Fehler: {e}")
-    except Exception as e:
-        raise AuthorizeError(f"Autorisierung fehlgeschlagen: {e}")
-    
     finally:
-        if ser is not None:
-            try:
-                ser.close()
-            except Exception:
-                pass
+        try:
+            request.release()
+        except Exception as e:
+            logger.warning(f"GPIO release Fehler: {e}")

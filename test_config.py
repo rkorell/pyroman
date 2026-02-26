@@ -26,10 +26,6 @@ else:
 
 # 2. Getter testen (nur wenn valid)
 if config.is_valid():
-    print("\n--- RF Sender ---")
-    rf = config.get_rf_sender()
-    print(f"  GPIO: {rf['gpio']}, gap: {rf['gap']}, t0: {rf['t0']}, t1: {rf['t1']}")
-    
     print("\n--- Koffer ---")
     for k in config.get_koffer_list():
         print(f"  {k['name']}: koffer_nummer={k['koffer_nummer']}, enabled={k['enabled']}")
