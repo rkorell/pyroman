@@ -16,6 +16,7 @@ Modified: 12.12.2025, 17:00 - Auth-Logik entfernt (Pi 5 Kompatibilität)
 Modified: 14.12.2025, 14:30 - AP7: Auth-Logik wiederhergestellt mit Plattform-Erkennung
 Modified: 14.12.2025, 15:30 - AP7: get_auth_check() durch is_auth_required() ersetzt
 Modified: 26.02.2026, 21:30 - Box-Test/Config Tab: Route, WS-Handler
+Modified: 28.02.2026, 17:00 - QS: wait_time Wertebereich begrenzt (0-12000)
 """
 
 import json
@@ -229,7 +230,7 @@ def handle_boxtest_command(message):
         'group_sync': lambda m: 8000032,
         'eeprom_read': lambda m: 8000021,
         'eeprom_clear': lambda m: 8000022,
-        'wait_time': lambda m: 8100001 + m.get('value', 750),
+        'wait_time': lambda m: 8100001 + max(0, min(12000, m.get('value', 750))),
     }
 
     code_fn = code_map.get(command)

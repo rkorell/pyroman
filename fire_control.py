@@ -10,8 +10,10 @@ Hält RF-Sender Instanz.
 
 Erstellt: 08.12.2025, 14:30
 Modified: 26.02.2026, 21:30 - get_rf_sender() öffentlich exponiert für BoxTest-Tab
+Modified: 28.02.2026, 17:00 - QS: Thread-safe Lazy-Init mit Lock
 """
 
+import threading
 import config
 import state
 import direktzuender_wartung
@@ -25,17 +27,20 @@ logger = config.get_logger(__name__)
 # =============================================================================
 
 _rf_sender = None
+_rf_sender_lock = threading.Lock()
 
 def _get_rf_sender():
-    """Gibt RF-Sender zurück (lazy init)."""
+    """Gibt RF-Sender zurück (lazy init, thread-safe)."""
     global _rf_sender
     if _rf_sender is None:
-        try:
-            _rf_sender = RFSender()
-            logger.info("RF-Sender initialisiert")
-        except RFSenderError as e:
-            logger.error(f"RF-Sender Fehler: {e}")
-            return None
+        with _rf_sender_lock:
+            if _rf_sender is None:
+                try:
+                    _rf_sender = RFSender()
+                    logger.info("RF-Sender initialisiert")
+                except RFSenderError as e:
+                    logger.error(f"RF-Sender Fehler: {e}")
+                    return None
     return _rf_sender
 
 def get_rf_sender():

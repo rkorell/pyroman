@@ -3,9 +3,8 @@
 # Erstellt: 07.12.2025, 21:00
 # Modified: 12.12.2025, 17:00 - pigpio entfernt (Pi 5 Kompatibilität)
 # Modified: 14.12.2025, 14:30 - AP7: pyserial + pigpio für Auth-Revival
+# Modified: 28.02.2026, 22:00 - QS2: pyserial + pigpio entfernt (gpiod v2, kein Arduino)
 
 Flask>=2.0
 flask-sock>=0.6.0
 requests>=2.28.1
-pyserial>=3.5
-pigpio>=1.78

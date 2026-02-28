@@ -15,6 +15,8 @@ Modified: 14.12.2025, 14:30 - AP7: Plattform-Erkennung Pi4/Pi5, Arduino Serial B
 Modified: 14.12.2025, 14:45 - AP7: Arduino Reset-Zeit 2s, Buffer leeren, #-Zeilen ignorieren
 Modified: 14.12.2025, 15:30 - AP7: get_auth_check() durch is_auth_required() ersetzt
 Modified: 26.02.2026, 17:30 - AP1: Komplett-Umbau auf gpiod v2 (pigpio/Arduino/Plattform-Erkennung entfernt)
+Modified: 28.02.2026, 17:00 - QS: Array-Bounds in Decode-Loop, Resource Cleanup Guard
+Modified: 28.02.2026, 23:00 - QS2: request=None Init vor try-Block (NameError-Absicherung)
 """
 
 import time
@@ -55,7 +57,7 @@ def _try_decode(timings, pnum, change_count_val):
     delay = timings[0] // proto['sync'][1]
     delay_tol = delay * TOLERANCE // 100
 
-    for i in range(1, change_count_val, 2):
+    for i in range(1, change_count_val - 1, 2):
         zh = proto['zero'][0] * delay
         zl = proto['zero'][1] * delay
         oh = proto['one'][0] * delay
@@ -128,6 +130,7 @@ def _authenticate_gpiod(auth_code, timeout):
     """
     logger.debug(f"Auth: Warte {timeout}s auf Code {auth_code} (GPIO {RX_GPIO})")
 
+    request = None
     try:
         request = gpiod.request_lines(
             GPIO_CHIP,
@@ -187,6 +190,7 @@ def _authenticate_gpiod(auth_code, timeout):
 
     finally:
         try:
-            request.release()
+            if request is not None:
+                request.release()
         except Exception as e:
             logger.warning(f"GPIO release Fehler: {e}")

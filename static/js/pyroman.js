@@ -12,6 +12,7 @@
  * Modified: 12.12.2025, 17:00 - Auth-Logik entfernt (Pi 5 Kompatibilität)
  * Modified: 14.12.2025, 14:30 - AP7: Auth-Logik wiederhergestellt
  * Modified: 26.02.2026, 21:30 - Box-Test/Config Tab: sendBoxTestCommand, Slider, EEprom-Confirm
+ * Modified: 28.02.2026, 23:00 - QS2: Double-Fire Schutz (sofort disabled bei Click)
  */
 
 // =============================================================================
@@ -550,18 +551,20 @@ function initEventListeners() {
     // Fire Items (Koffer)
     document.querySelectorAll('.fire-item[data-koffer]').forEach(item => {
         item.addEventListener('click', () => {
-            if (item.classList.contains('disabled')) return;
+            if (item.classList.contains('disabled') || item.classList.contains('fired')) return;
             const kofferId = parseInt(item.dataset.koffer);
             const kanalNr = parseInt(item.dataset.kanal);
+            item.classList.add('fired', 'disabled');
             fireKoffer(kofferId, kanalNr);
         });
     });
-    
+
     // Fire Items (Direktzünder)
     document.querySelectorAll('.fire-item[data-direktzuender]').forEach(item => {
         item.addEventListener('click', () => {
-            if (item.classList.contains('disabled') || item.classList.contains('unavailable')) return;
+            if (item.classList.contains('disabled') || item.classList.contains('unavailable') || item.classList.contains('fired')) return;
             const nr = parseInt(item.dataset.direktzuender);
+            item.classList.add('fired', 'disabled');
             fireDirektzuender(nr);
         });
     });

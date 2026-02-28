@@ -9,6 +9,7 @@ Defaults: protocol=1, pulselength=350
 
 (c) Dr. Ralf Korell, 2026
 # Created: 23.02.2026, 19:30 - Initiale Version
+# Modified: 28.02.2026, 17:00 - QS: try-finally fuer GPIO Resource Cleanup
 """
 
 import sys
@@ -43,28 +44,30 @@ def send(code, protocol=1, pulselength=None):
         config={GPIO_PIN: gpiod.LineSettings(direction=Direction.OUTPUT, output_value=Value.INACTIVE)}
     )
 
-    rawcode = format(code, f'#0{LENGTH + 2}b')[2:]
+    try:
+        rawcode = format(code, f'#0{LENGTH + 2}b')[2:]
 
-    for _ in range(REPEAT):
-        for bit in rawcode:
-            if bit == '0':
-                h, l = proto['zero']
-            else:
-                h, l = proto['one']
+        for _ in range(REPEAT):
+            for bit in rawcode:
+                if bit == '0':
+                    h, l = proto['zero']
+                else:
+                    h, l = proto['one']
+                line.set_value(GPIO_PIN, Value.ACTIVE)
+                time.sleep(h * pl / 1000000)
+                line.set_value(GPIO_PIN, Value.INACTIVE)
+                time.sleep(l * pl / 1000000)
+            # Sync
+            sh, sl = proto['sync']
             line.set_value(GPIO_PIN, Value.ACTIVE)
-            time.sleep(h * pl / 1000000)
+            time.sleep(sh * pl / 1000000)
             line.set_value(GPIO_PIN, Value.INACTIVE)
-            time.sleep(l * pl / 1000000)
-        # Sync
-        sh, sl = proto['sync']
-        line.set_value(GPIO_PIN, Value.ACTIVE)
-        time.sleep(sh * pl / 1000000)
-        line.set_value(GPIO_PIN, Value.INACTIVE)
-        time.sleep(sl * pl / 1000000)
+            time.sleep(sl * pl / 1000000)
 
-    line.set_value(GPIO_PIN, Value.INACTIVE)
-    line.release()
-    chip.close()
+        line.set_value(GPIO_PIN, Value.INACTIVE)
+    finally:
+        line.release()
+        chip.close()
 
 if __name__ == '__main__':
     if len(sys.argv) < 2:

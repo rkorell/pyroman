@@ -210,7 +210,7 @@ Trixie vorinstalliert, keine zusätzliche Installation nötig.
 
 > **Hinweis:** `rpi-rf-gpiod` (pip) ist inkompatibel mit gpiod v2 - NICHT verwenden.
 
-### 3.1 codesend.py installieren (433MHz Senden)
+### 4.1 codesend.py installieren (433MHz Senden)
 
 `codesend.py` liegt im Repo (nach Schritt 7). Für den Frühtest vor dem
 Repo-Clone die Datei manuell anlegen oder vom alten System kopieren.
@@ -231,7 +231,7 @@ codesend <code> [protocol] [pulselength]
 
 > Defaults: protocol=1, pulselength=350
 
-### 3.2 getcode.py installieren (433MHz Empfangen)
+### 4.2 getcode.py installieren (433MHz Empfangen)
 
 ```bash
 chmod +x /home/pi/pyroman/getcode.py
@@ -249,7 +249,7 @@ getcode [sekunden]
 
 > Default: 10 Sekunden. Ctrl+C zum vorzeitigen Abbrechen.
 
-### 3.3 TX testen
+### 4.3 TX testen
 
 Einen Funkkoffer einschalten, dann:
 
@@ -259,7 +259,7 @@ codesend 301
 
 > Erwartung: Koffer 3, Kanal 1 empfängt.
 
-### 3.4 RX testen
+### 4.4 RX testen
 
 ```bash
 getcode 30
@@ -371,6 +371,18 @@ Weitere Änderungen für den RX-Fallback:
 - `config.py`: `get_arduino_port()` wiederherstellen (ebenfalls aus Git-Historie, Commit `4433c56`)
 - `getcode.py`: Analog umbauen - statt gpiod Edge-Detection den Arduino per Serial ansprechen
 
+**UART aktivieren (bei UART-Variante):** In `/boot/firmware/config.txt` unter `[all]` ergänzen:
+
+```ini
+dtparam=uart0=on
+enable_uart=1
+dtoverlay=disable-bt
+```
+
+> `disable-bt` gibt `/dev/ttyAMA0` frei (wird sonst von Bluetooth belegt).
+> Bluetooth ist danach nicht mehr verfügbar. Bei der USB-Variante (`/dev/ttyUSB0`)
+> sind diese Einträge nicht nötig.
+
 #### GitHub-Links
 
 | Projekt | URL | Zweck |
@@ -383,7 +395,7 @@ Weitere Änderungen für den RX-Fallback:
 
 ## Schritt 5: Git + SSH einrichten
 
-### 4.1 SSH-Key für GitHub
+### 5.1 SSH-Key für GitHub
 
 Falls noch kein SSH-Key vorhanden, entweder neu erzeugen oder vom
 alten PyroTablet kopieren (Key ist dort bereits bei GitHub hinterlegt):
@@ -404,7 +416,7 @@ chmod 600 ~/.ssh/id_ed25519_github
 chmod 644 ~/.ssh/id_ed25519_github.pub
 ```
 
-### 4.2 SSH-Config für GitHub
+### 5.2 SSH-Config für GitHub
 
 ```bash
 cat >> ~/.ssh/config << 'EOF'
@@ -418,7 +430,7 @@ EOF
 chmod 600 ~/.ssh/config
 ```
 
-### 4.3 Git-User konfigurieren
+### 5.3 Git-User konfigurieren
 
 ```bash
 git config --global user.name "Ralf Korell"
@@ -428,7 +440,7 @@ git config --global user.name "Ralf Korell"
 git config --global user.email "ralf@korell.org"
 ```
 
-### 4.4 Verbindung testen
+### 5.4 Verbindung testen
 
 ```bash
 ssh -T git@github.com
@@ -744,6 +756,10 @@ cp ~/pyroman_doc/desktop/PyroTABLET.jpg ~/Pictures/
 # Zündkoffer-GUI + Assets
 mkdir -p ~/python
 cp ~/pyroman_doc/desktop/Zuendkoffer.py ~/pyroman_doc/desktop/suitcase.png ~/pyroman_doc/desktop/button.png ~/pyroman_doc/desktop/buttonred.png ~/python/
+
+# Python-Tools vom Prod-Pi übernehmen (Batterietest, Watchdog, etc.)
+# Einmalig beim ersten Setup vom alten System kopieren:
+scp -r pi@172.23.56.154:/home/pi/python/* ~/python/
 ```
 
 ### 12.2 Desktop-Verknüpfungen anlegen
@@ -829,6 +845,260 @@ Im Standard-Browser (Chromium) als Startseite setzen:
 
 PyroMan in das zentrale Backup-Konzept einbinden. Das Backup wird vom
 Backup-Server auf dem Webserver (IP .192) initiiert und gesteuert.
+
+---
+
+## Schritt 14: Tryboot auf Prod-Pi einrichten (einmalig)
+
+Der Prod-Pi bootet von NVMe (`BOOT_ORDER=0xf16`). Um eine Migrations-SD einmalig
+zu booten, muss im EEPROM der `[tryboot]`-Abschnitt eingerichtet werden. Das ist
+eine einmalige Konfiguration - danach kann jederzeit per `sudo reboot "0 tryboot"`
+von SD gebootet werden.
+
+### Hintergrund: EEPROM-Falle
+
+`rpi-eeprom-config --edit` und `--apply` bauen das EEPROM-Image immer aus der
+**neuesten verfügbaren Firmware** im Release-Verzeichnis. Es gibt keinen Schalter,
+der das Firmware-Update unterdrückt. Ein stilles Firmware-Upgrade kann Probleme
+verursachen (z.B. wayvnc-Bruch durch Dez-2025-Firmware auf einem anderen Pi).
+
+### 14.1 Firmware-Versionen prüfen
+
+```bash
+sudo rpi-eeprom-update
+```
+
+Vergleiche `CURRENT` (geflasht) und `LATEST` (neuestes verfügbares Image).
+
+**Fall A: CURRENT = LATEST** → Kein Upgrade-Risiko, direkt weiter mit 14.3.
+
+**Fall B: LATEST > CURRENT** → Neuere Images müssen vorher weggesichert werden (14.2).
+
+### 14.2 Neuere Firmware-Images wegsichern (nur bei Fall B)
+
+```bash
+# Release-Verzeichnis ermitteln (Zeile "RELEASE:" in der Ausgabe von rpi-eeprom-update)
+ls -la /usr/lib/firmware/raspberrypi/bootloader-2712/latest/pieeprom-*.bin
+```
+
+Alle Images **neuer** als die CURRENT-Version temporär wegsichern:
+
+```bash
+# Beispiel: CURRENT ist 2025-03-19, aber 2025-06-01 und 2025-08-15 liegen auch da
+sudo mkdir /tmp/eeprom-backup
+sudo mv /usr/lib/firmware/raspberrypi/bootloader-2712/latest/pieeprom-2025-06-01.bin /tmp/eeprom-backup/
+sudo mv /usr/lib/firmware/raspberrypi/bootloader-2712/latest/pieeprom-2025-08-15.bin /tmp/eeprom-backup/
+```
+
+Verifizieren - CURRENT und LATEST müssen jetzt identisch sein:
+
+```bash
+sudo rpi-eeprom-update
+```
+
+### 14.3 Tryboot-Config anwenden
+
+Config-Datei erstellen:
+
+```bash
+cat > /tmp/eeprom-config.txt << 'EOF'
+[all]
+BOOT_UART=1
+POWER_OFF_ON_HALT=0
+BOOT_ORDER=0xf16
+PCIE_PROBE=1
+PSU_MAX_CURRENT=5000
+
+[tryboot]
+BOOT_ORDER=0xf61
+EOF
+```
+
+> Den `[all]`-Abschnitt vorher mit `rpi-eeprom-config` auslesen und übernehmen -
+> die Werte oben sind ein Beispiel. Nur `[tryboot]` kommt neu dazu.
+
+Anwenden:
+
+```bash
+sudo rpi-eeprom-config --apply /tmp/eeprom-config.txt
+```
+
+Das EEPROM-Update wird vorbereitet, aber erst beim nächsten Reboot geflasht:
+
+```bash
+sudo reboot
+```
+
+### 14.4 Verifizieren
+
+Nach dem Reboot:
+
+```bash
+rpi-eeprom-config
+```
+
+Erwartete Ausgabe:
+
+```ini
+[all]
+BOOT_UART=1
+POWER_OFF_ON_HALT=0
+BOOT_ORDER=0xf16
+PCIE_PROBE=1
+PSU_MAX_CURRENT=5000
+
+[tryboot]
+BOOT_ORDER=0xf61
+```
+
+Firmware-Version prüfen (muss unverändert sein):
+
+```bash
+sudo rpi-eeprom-update
+```
+
+### 14.5 Firmware-Images zurücklegen (nur bei Fall B)
+
+```bash
+sudo mv /tmp/eeprom-backup/pieeprom-*.bin /usr/lib/firmware/raspberrypi/bootloader-2712/latest/
+sudo rmdir /tmp/eeprom-backup
+```
+
+### Boot-Codes Referenz
+
+| Code | Gerät |
+|------|-------|
+| `1` | SD-Karte |
+| `4` | USB (XHCI/USB-A) |
+| `6` | NVMe |
+| `f` | Loop (Restart) |
+
+`0xf16` = NVMe → SD → Loop, `0xf61` = SD → NVMe → Loop
+
+---
+
+## Schritt 15: SD-Migration auf Prod-Pi durchführen
+
+Wenn tryboot eingerichtet ist (Schritt 14), kann die Dev-SD auf den Prod-Pi
+geklont werden. Der Ablauf: SD einsetzen, einmalig von SD booten (tryboot),
+SD komplett auf NVMe klonen, Nacharbeiten, zurück auf NVMe booten.
+
+### 15.1 Vorbereitung: config.txt für Prod-Hardware anpassen
+
+Vor dem Klon muss `/boot/firmware/config.txt` auf der Dev-SD die Prod-Hardware-Config
+enthalten. Einträge, die auf dem Dev-Pi nicht zutreffen (z.B. DSI-Display), werden
+dort einfach ignoriert.
+
+Folgende Einträge müssen vorhanden sein (vor `[all]`):
+
+```ini
+# Waveshare 10.1" DSI Display (wird auf HDMI-only ignoriert)
+dtoverlay=vc4-kms-dsi-waveshare-panel,10_1_inch
+display_lcd_rotate=3
+```
+
+Folgende Einträge unter `[all]`:
+
+```ini
+# LED-Konfiguration (Prod-Pi)
+dtparam=pwr_led_trigger=default-on
+dtparam=pwr_led_activelow=off
+dtparam=act_led_trigger=none
+dtparam=act_led_activelow=off
+dtparam=eth_led0=4
+dtparam=eth_led1=4
+
+# USB max current (für GeeekPi Power Board)
+usb_max_current_enable=1
+```
+
+> **Nicht** eintragen: `enable_uart=1`, `dtparam=uart0=on`, `dtoverlay=disable-bt` -
+> das war für die Arduino Serial Bridge und wird nicht mehr benötigt (siehe Fallback,
+> Schritt 4.5). `disable-bt` würde Bluetooth deaktivieren.
+
+### 15.2 SD in Prod-Pi einsetzen
+
+- Dev-Pi herunterfahren
+- SD-Karte entnehmen
+- SD-Karte in den Prod-Pi einsetzen
+
+### 15.3 Tryboot auslösen
+
+Auf dem Prod-Pi (der noch von NVMe läuft):
+
+```bash
+sudo reboot "0 tryboot"
+```
+
+Der Pi bootet einmalig von SD (`BOOT_ORDER=0xf61`: SD → NVMe → Loop).
+
+### 15.4 SD auf NVMe klonen
+
+Nach dem Boot von SD den **SD Card Copier** (`piclone`) öffnen:
+
+- Menü → Zubehör → SD Card Copier
+- Quelle (Copy From Device): SD-Karte
+- Ziel (Copy To Device): NVMe
+- "New Partition UUIDs" angehakt lassen (erzeugt neue UUIDs, passt fstab und cmdline.txt automatisch an)
+- Start → Warten bis fertig
+
+> **Achtung:** Das überschreibt den gesamten Inhalt der NVMe!
+
+### 15.5 Hostname setzen
+
+Der Dev-Pi heißt `PyroTabletDev`, der Prod-Pi soll `PyroTablet` heißen:
+
+```bash
+sudo hostnamectl set-hostname PyroTablet
+```
+
+Wirkt sofort (neues Terminal zeigt neuen Hostname), kein Reboot nötig.
+
+### 15.6 System-Kennung anpassen (werbinich.txt)
+
+Die Datei `~/werbinich.txt` markiert, welches System gerade gebootet hat -
+Dev-SD und Prod-NVMe sehen am Bildschirm sonst identisch aus.
+
+Nach dem Klon auf der NVMe den Stern umsetzen:
+
+```bash
+cat > ~/werbinich.txt << 'EOF'
+Ich bin aktuell:
+  Development
+* Produktion
+EOF
+```
+
+### 15.7 Desktop-Hintergrund prüfen
+
+Die Desktop-Config von pcmanfm enthält den Monitor-Namen im Dateinamen.
+Auf der Dev-SD sind Config-Dateien für beide Monitore vorbereitet:
+
+- `desktop-items-HDMI-A-1.conf` (Dev-Pi, HDMI)
+- `desktop-items-DSI-2.conf` (Prod-Pi, Waveshare 10.1" DSI)
+
+Nach dem Klon sollte das Wallpaper automatisch greifen. Falls nicht (z.B. wenn
+der DSI-Monitor einen anderen Namen hat): Rechtsklick auf Desktop →
+Desktop-Einstellungen → Wallpaper manuell setzen (`~/Pictures/PyroTABLET.jpg`).
+pcmanfm erstellt dann automatisch die richtige Config-Datei.
+
+### 15.8 Zurück auf NVMe booten
+
+```bash
+sudo reboot
+```
+
+Normaler Reboot → bootet von NVMe (jetzt mit dem geklonten, aktuellen Stand).
+Die SD kann entnommen werden.
+
+### 15.9 Verifizieren
+
+- PyroMan erreichbar über http://10.42.0.1:5000 (Hotspot)
+- Hotspot "PyroTablet" aktiv (Onboard-WLAN, ohne MAC-Bindung)
+- KORELL Web verbunden (USB-Dongle, MAC-gebunden)
+- Hostname: `PyroTablet`
+- Wallpaper und Desktop-Icons korrekt
+- `sudo systemctl status pyroman` → active (running)
 
 ---
 

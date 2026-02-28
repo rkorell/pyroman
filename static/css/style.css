@@ -1143,7 +1143,7 @@ a:hover {
 }
 
 .boxtest-config-section {
-    background: var(--surface-color);
+    background: var(--bg-card);
     border-radius: var(--radius-lg);
     border: 1px solid var(--border-color);
     padding: var(--spacing-md);
@@ -1215,6 +1215,20 @@ a:hover {
     border-radius: 50%;
     background: var(--accent-primary);
     cursor: pointer;
+}
+
+.boxtest-slider::-moz-range-thumb {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: var(--accent-primary);
+    cursor: pointer;
+    border: none;
+}
+
+.boxtest-slider::-moz-range-track {
+    background: transparent;
+    border: none;
 }
 
 .boxtest-slider-value {

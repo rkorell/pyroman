@@ -13,6 +13,7 @@ Modified: 08.12.2025, 15:45 - get_ui_config() hinzugefügt
 Modified: 14.12.2025, 14:30 - AP7: get_auth_check(), get_arduino_port() hinzugefügt
 Modified: 14.12.2025, 15:30 - AP7: get_auth_check() entfernt, nur is_auth_required() verwenden
 Modified: 26.02.2026, 17:30 - AP1: RF-Sender/Empfänger Validierung+Getter entfernt (jetzt in codesend.py/getcode.py gekapselt)
+Modified: 28.02.2026, 23:00 - QS2: CHANGE_ME-Check vor Typ-Check (korrekte Fehlermeldung)
 Modified: 26.02.2026, 17:30 - AP1: get_arduino_port() entfernt (Arduino-Bridge entfällt)
 """
 
@@ -69,11 +70,11 @@ def _validate_required_field(section, field_name, field_type, section_name):
     value = section[field_name]
     
     if field_type == "numeric":
-        if not isinstance(value, (int, float)):
-            _add_error(f"{section_name}.{field_name} muss eine Zahl sein (ist: {type(value).__name__})")
-            return False
         if isinstance(value, str) and value == "CHANGE_ME":
             _add_error(f"{section_name}.{field_name} ist 'CHANGE_ME' - nicht konfiguriert!")
+            return False
+        if not isinstance(value, (int, float)):
+            _add_error(f"{section_name}.{field_name} muss eine Zahl sein (ist: {type(value).__name__})")
             return False
     elif field_type == "string":
         if not isinstance(value, str):

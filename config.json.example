@@ -17,6 +17,7 @@
 
   "autorisierung": {
     "auth_required": true,
+    "auth_code": 1234567,
     "auth_timeout_sekunden": 5
   },
 

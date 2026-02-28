@@ -12,6 +12,7 @@ Dekodiert rc-switch Protokolle 1-5.
 
 (c) Dr. Ralf Korell, 2026
 # Created: 23.02.2026, 20:15 - Initiale Version
+# Modified: 28.02.2026, 17:00 - QS: Resource Cleanup, Array-Bounds in Decode-Loop
 """
 
 import sys
@@ -41,7 +42,7 @@ def try_decode(timings, pnum, change_count_val):
     delay = timings[0] // proto['sync'][1]
     delay_tol = delay * TOLERANCE // 100
 
-    for i in range(1, change_count_val, 2):
+    for i in range(1, change_count_val - 1, 2):
         zh = proto['zero'][0] * delay
         zl = proto['zero'][1] * delay
         oh = proto['one'][0] * delay
@@ -63,11 +64,16 @@ def try_decode(timings, pnum, change_count_val):
 
 def listen(timeout_seconds):
     """Lauscht auf 433MHz-Signale und gibt empfangene Codes aus."""
-    request = gpiod.request_lines(
-        CHIP,
-        consumer="rf433rx",
-        config={GPIO_PIN: gpiod.LineSettings(edge_detection=Edge.BOTH)}
-    )
+    request = None
+    try:
+        request = gpiod.request_lines(
+            CHIP,
+            consumer="rf433rx",
+            config={GPIO_PIN: gpiod.LineSettings(edge_detection=Edge.BOTH)}
+        )
+    except Exception as e:
+        print(f"Fehler: GPIO {GPIO_PIN} nicht verfuegbar: {e}", file=sys.stderr)
+        sys.exit(1)
 
     timings = [0] * (MAX_CHANGES + 1)
     last_timestamp = 0

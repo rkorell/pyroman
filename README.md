@@ -103,9 +103,10 @@ Die vollständige Aufbauanleitung vom leeren Pi bis zum lauffähigen System:
 
 **[doc/Rebuild-Pyro.md](doc/Rebuild-Pyro.md)**
 
-Die Anleitung umfasst 13 Schritte: Netzwerk (Hotspot + Client-WLAN), GPIO-Verkabelung,
+Die Anleitung umfasst 15 Schritte: Netzwerk (Hotspot + Client-WLAN), GPIO-Verkabelung,
 Stromversorgung, 433MHz-Test (inkl. Fallback-Pfad), Git, Abhängigkeiten, Repo klonen,
-Konfiguration, Code-Portierung, Funktionstest, systemd-Service, Desktop und Backup.
+Konfiguration, Code-Portierung, Funktionstest, systemd-Service, Desktop, Backup,
+Tryboot-Setup (EEPROM) und SD-Migration.
 
 ### Dateien außerhalb des Repos
 
