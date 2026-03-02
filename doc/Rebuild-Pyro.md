@@ -1,7 +1,8 @@
-# Setup: Neues PyroMan-System (Pi 5 / Trixie)
+# Rebuild: PyroTablet (Pi 5 / Trixie)
 
 **Autor:** Dr. Ralf Korell
 **Ausgangs-OS:** Debian 13 (Trixie)
+**Stand:** 2026-03-01
 
 Fahrplan: Vom leeren, mit Trixie geflashten Pi 5 zum lauffähigen PyroMan.
 
@@ -44,7 +45,7 @@ Dieses System:
 Zuerst die Client-Verbindung auf den Dongle legen, damit Netzwerk-Zugang bestehen bleibt.
 
 ```bash
-nmcli connection add type wifi con-name "KORELL Web" ssid "KORELL Web" wifi.mac-address 98:03:8E:9E:FC:BE wifi-sec.key-mgmt wpa-psk wifi-sec.psk "HIER_WLAN_PASSWORT" ipv4.method auto ipv6.method auto
+nmcli connection add type wifi con-name "KORELL Web" ssid "KORELL Web" wifi.mac-address 98:03:8E:9E:FC:BE wifi-sec.key-mgmt wpa-psk wifi-sec.psk "1234567marvin" ipv4.method auto ipv6.method auto
 ```
 
 ```bash
@@ -298,7 +299,9 @@ rc-switch muss NICHT separat installiert werden.
 git clone https://github.com/WiringPi/WiringPi.git
 cd WiringPi
 ./build
+```
 
+```bash
 # 2. 433Utils klonen (rc-switch kommt als Submodul mit)
 cd ~
 git clone --recursive https://github.com/ninjablocks/433Utils.git
@@ -398,7 +401,7 @@ dtoverlay=disable-bt
 ### 5.1 SSH-Key für GitHub
 
 Falls noch kein SSH-Key vorhanden, entweder neu erzeugen oder vom
-alten PyroTablet kopieren (Key ist dort bereits bei GitHub hinterlegt):
+Migrationsrechner kopieren (Key ist dort bereits bei GitHub hinterlegt):
 
 ```bash
 scp pi@172.23.56.154:~/.ssh/id_ed25519 ~/.ssh/id_ed25519_github
@@ -555,7 +558,7 @@ EOF
 ## Schritt 8: config.json und secrets.json vom alten System kopieren
 
 Zwei Konfigurationsdateien sind NICHT im Git (Sicherheit!) und müssen
-manuell vom bestehenden System kopiert werden:
+manuell vom Migrationsrechner kopiert werden:
 
 | Datei | Inhalt | Benötigt für |
 |-------|--------|-------------|
@@ -564,6 +567,9 @@ manuell vom bestehenden System kopiert werden:
 
 ```bash
 scp pi@172.23.56.154:/home/pi/pyroman/config.json /home/pi/pyroman/
+```
+
+```bash
 scp pi@172.23.56.154:/home/pi/pyroman/secrets.json /home/pi/pyroman/
 ```
 
@@ -749,16 +755,22 @@ Box-Test ist als Tab in PyroMan integriert und braucht kein Desktop-Icon mehr.
 ```bash
 # Desktop-Icons (Bilder)
 cp ~/pyroman_doc/desktop/bomb.png ~/pyroman_doc/desktop/ShutDown.png ~/pyroman_doc/desktop/pyroman.ico ~/
+```
 
+```bash
 # Hintergrundbild
 cp ~/pyroman_doc/desktop/PyroTABLET.jpg ~/Pictures/
+```
 
+```bash
 # Zündkoffer-GUI + Assets
 mkdir -p ~/python
 cp ~/pyroman_doc/desktop/Zuendkoffer.py ~/pyroman_doc/desktop/suitcase.png ~/pyroman_doc/desktop/button.png ~/pyroman_doc/desktop/buttonred.png ~/python/
+```
 
-# Python-Tools vom Prod-Pi übernehmen (Batterietest, Watchdog, etc.)
-# Einmalig beim ersten Setup vom alten System kopieren:
+```bash
+# Python-Tools vom Migrationsrechner übernehmen (Batterietest, Watchdog, etc.)
+# Einmalig beim ersten Setup:
 scp -r pi@172.23.56.154:/home/pi/python/* ~/python/
 ```
 
@@ -843,17 +855,26 @@ Im Standard-Browser (Chromium) als Startseite setzen:
 
 ## Schritt 13: Backup einrichten
 
-PyroMan in das zentrale Backup-Konzept einbinden. Das Backup wird vom
-Backup-Server auf dem Webserver (IP .192) initiiert und gesteuert.
+PyroTablet in das zentrale Backup-Konzept einbinden (siehe [Installation](030_Installation.md) und [Konfiguration](040_Konfiguration.md)):
+
+1. NFS-Mount einrichten (`/mnt/backup` → WebServer 172.23.56.196)
+2. raspiBackup.sh installieren
+3. Wrapper-Script nach `/opt/raspi-backup/scripts/` kopieren
+4. Config nach `/usr/local/etc/raspiBackup.conf`
+5. Manuelles Backup über Web-Interface auslösen und prüfen
 
 ---
 
-## Schritt 14: Tryboot auf Prod-Pi einrichten (einmalig)
+## Schritt 14: EEPROM Boot-Reihenfolge für Migration anpassen
 
-Der Prod-Pi bootet von NVMe (`BOOT_ORDER=0xf16`). Um eine Migrations-SD einmalig
-zu booten, muss im EEPROM der `[tryboot]`-Abschnitt eingerichtet werden. Das ist
-eine einmalige Konfiguration - danach kann jederzeit per `sudo reboot "0 tryboot"`
-von SD gebootet werden.
+Der Prod-Pi bootet von NVMe (`BOOT_ORDER=0xf16`). Um von einem USB-Stick zu
+booten (z.B. für die Migration), muss die Boot-Reihenfolge temporär auf
+USB-first umgestellt werden.
+
+> **Hinweis:** Tryboot (`sudo reboot "0 tryboot"` mit `[tryboot]`-Sektion im
+> EEPROM) hat sich in der Praxis als unzuverlässig erwiesen - der Pi blieb
+> beim Boot hängen (grüne LED ohne Flackern, kein Bootloader-Output).
+> Daher wird stattdessen die Boot-Reihenfolge direkt im EEPROM umgestellt.
 
 ### Hintergrund: EEPROM-Falle
 
@@ -896,26 +917,30 @@ Verifizieren - CURRENT und LATEST müssen jetzt identisch sein:
 sudo rpi-eeprom-update
 ```
 
-### 14.3 Tryboot-Config anwenden
+### 14.3 Boot-Reihenfolge auf USB-first umstellen
 
-Config-Datei erstellen:
+Aktuelle Config auslesen:
+
+```bash
+rpi-eeprom-config
+```
+
+Config-Datei mit angepasster Boot-Reihenfolge erstellen:
 
 ```bash
 cat > /tmp/eeprom-config.txt << 'EOF'
 [all]
 BOOT_UART=1
 POWER_OFF_ON_HALT=0
-BOOT_ORDER=0xf16
+BOOT_ORDER=0xf46
 PCIE_PROBE=1
 PSU_MAX_CURRENT=5000
-
-[tryboot]
-BOOT_ORDER=0xf61
 EOF
 ```
 
 > Den `[all]`-Abschnitt vorher mit `rpi-eeprom-config` auslesen und übernehmen -
-> die Werte oben sind ein Beispiel. Nur `[tryboot]` kommt neu dazu.
+> die Werte oben sind ein Beispiel. Nur `BOOT_ORDER` ändert sich.
+> `0xf46` = USB (XHCI) → NVMe → Loop.
 
 Anwenden:
 
@@ -937,25 +962,7 @@ Nach dem Reboot:
 rpi-eeprom-config
 ```
 
-Erwartete Ausgabe:
-
-```ini
-[all]
-BOOT_UART=1
-POWER_OFF_ON_HALT=0
-BOOT_ORDER=0xf16
-PCIE_PROBE=1
-PSU_MAX_CURRENT=5000
-
-[tryboot]
-BOOT_ORDER=0xf61
-```
-
-Firmware-Version prüfen (muss unverändert sein):
-
-```bash
-sudo rpi-eeprom-update
-```
+`BOOT_ORDER` muss `0xf46` zeigen.
 
 ### 14.5 Firmware-Images zurücklegen (nur bei Fall B)
 
@@ -963,6 +970,16 @@ sudo rpi-eeprom-update
 sudo mv /tmp/eeprom-backup/pieeprom-*.bin /usr/lib/firmware/raspberrypi/bootloader-2712/latest/
 sudo rmdir /tmp/eeprom-backup
 ```
+
+### 14.6 Nach der Migration: Boot-Reihenfolge zurücksetzen
+
+Nach erfolgreicher Migration `BOOT_ORDER` wieder auf NVMe-first setzen:
+
+```bash
+BOOT_ORDER=0xf16
+```
+
+Gleiche Prozedur wie 14.3 (Config erstellen, `--apply`, Reboot).
 
 ### Boot-Codes Referenz
 
@@ -973,15 +990,19 @@ sudo rmdir /tmp/eeprom-backup
 | `6` | NVMe |
 | `f` | Loop (Restart) |
 
-`0xf16` = NVMe → SD → Loop, `0xf61` = SD → NVMe → Loop
+| Reihenfolge | Bedeutung |
+|-------------|-----------|
+| `0xf16` | NVMe → SD → Loop (Normal) |
+| `0xf46` | USB → NVMe → Loop (Migration) |
+| `0xf61` | SD → NVMe → Loop (Tryboot - unzuverlässig!) |
 
 ---
 
-## Schritt 15: SD-Migration auf Prod-Pi durchführen
+## Schritt 15: USB-Migration auf Prod-Pi durchführen
 
-Wenn tryboot eingerichtet ist (Schritt 14), kann die Dev-SD auf den Prod-Pi
-geklont werden. Der Ablauf: SD einsetzen, einmalig von SD booten (tryboot),
-SD komplett auf NVMe klonen, Nacharbeiten, zurück auf NVMe booten.
+Dev-SD auf USB-Stick klonen, dann vom USB-Stick auf dem Prod-Pi booten und
+auf NVMe klonen. Die Boot-Reihenfolge muss vorher auf USB-first umgestellt
+sein (Schritt 14).
 
 ### 15.1 Vorbereitung: config.txt für Prod-Hardware anpassen
 
@@ -989,10 +1010,11 @@ Vor dem Klon muss `/boot/firmware/config.txt` auf der Dev-SD die Prod-Hardware-C
 enthalten. Einträge, die auf dem Dev-Pi nicht zutreffen (z.B. DSI-Display), werden
 dort einfach ignoriert.
 
-Folgende Einträge müssen vorhanden sein (vor `[all]`):
+Der DSI-Display-Overlay muss im **globalen Bereich** stehen (vor den `[cm4]`/`[cm5]`-Sektionen),
+nicht unter `[all]`. Position: nach `arm_boost=1`, vor `[cm4]`:
 
 ```ini
-# Waveshare 10.1" DSI Display (wird auf HDMI-only ignoriert)
+# Waveshare 10.1" DSI Display (Prod-Pi, wird auf HDMI-only ignoriert)
 dtoverlay=vc4-kms-dsi-waveshare-panel,10_1_inch
 display_lcd_rotate=3
 ```
@@ -1016,28 +1038,30 @@ usb_max_current_enable=1
 > das war für die Arduino Serial Bridge und wird nicht mehr benötigt (siehe Fallback,
 > Schritt 4.5). `disable-bt` würde Bluetooth deaktivieren.
 
-### 15.2 SD in Prod-Pi einsetzen
+### 15.2 Dev-SD auf USB-Stick klonen
 
-- Dev-Pi herunterfahren
-- SD-Karte entnehmen
-- SD-Karte in den Prod-Pi einsetzen
+Auf dem Dev-Pi die SD-Karte auf einen USB-Stick klonen:
 
-### 15.3 Tryboot auslösen
+- **SD Card Copier** (`piclone`) öffnen: Menü → Zubehör → SD Card Copier
+- Quelle (Copy From Device): SD-Karte
+- Ziel (Copy To Device): USB-Stick
+- "New Partition UUIDs" angehakt lassen
+- Start → Warten bis fertig
 
-Auf dem Prod-Pi (der noch von NVMe läuft):
+### 15.3 USB-Stick in Prod-Pi einstecken und booten
 
-```bash
-sudo reboot "0 tryboot"
-```
+- USB-Stick in den Prod-Pi einstecken (USB-A Port)
+- Boot-Reihenfolge muss auf USB-first stehen (Schritt 14)
+- Prod-Pi neu starten: `sudo reboot`
 
-Der Pi bootet einmalig von SD (`BOOT_ORDER=0xf61`: SD → NVMe → Loop).
+Der Pi bootet vom USB-Stick (`BOOT_ORDER=0xf46`: USB → NVMe → Loop).
 
-### 15.4 SD auf NVMe klonen
+### 15.4 USB auf NVMe klonen
 
-Nach dem Boot von SD den **SD Card Copier** (`piclone`) öffnen:
+Nach dem Boot vom USB-Stick den **SD Card Copier** (`piclone`) öffnen:
 
 - Menü → Zubehör → SD Card Copier
-- Quelle (Copy From Device): SD-Karte
+- Quelle (Copy From Device): USB-Stick
 - Ziel (Copy To Device): NVMe
 - "New Partition UUIDs" angehakt lassen (erzeugt neue UUIDs, passt fstab und cmdline.txt automatisch an)
 - Start → Warten bis fertig
@@ -1082,20 +1106,28 @@ der DSI-Monitor einen anderen Namen hat): Rechtsklick auf Desktop →
 Desktop-Einstellungen → Wallpaper manuell setzen (`~/Pictures/PyroTABLET.jpg`).
 pcmanfm erstellt dann automatisch die richtige Config-Datei.
 
-### 15.8 Zurück auf NVMe booten
+### 15.8 Boot-Reihenfolge zurücksetzen und NVMe booten
 
-```bash
-sudo reboot
-```
+Boot-Reihenfolge wieder auf NVMe-first setzen (siehe Schritt 14.6):
+`BOOT_ORDER` von `0xf46` zurück auf `0xf16`.
 
-Normaler Reboot → bootet von NVMe (jetzt mit dem geklonten, aktuellen Stand).
-Die SD kann entnommen werden.
+Nach dem Reboot bootet der Pi von NVMe (jetzt mit dem geklonten, aktuellen Stand).
+USB-Stick kann entfernt werden.
 
-### 15.9 Verifizieren
+### 15.9 USB-WLAN-Dongle prüfen
+
+Der USB-WLAN-Dongle (TP-Link, MAC-gebunden) wandert mit dem USB-Stick/SD-Karte
+mit. Der Hotspot (Onboard-WLAN) funktioniert sofort, da er nicht MAC-gebunden ist.
+
+**Bekanntes Problem:** Der USB-Dongle verbindet sich nach der Migration möglicherweise
+nicht automatisch mit dem konfigurierten Client-WLAN (z.B. "KORELL Web"). In diesem
+Fall die Verbindung manuell über die WLAN-Einstellungen neu einrichten.
+
+### 15.10 Verifizieren
 
 - PyroMan erreichbar über http://10.42.0.1:5000 (Hotspot)
 - Hotspot "PyroTablet" aktiv (Onboard-WLAN, ohne MAC-Bindung)
-- KORELL Web verbunden (USB-Dongle, MAC-gebunden)
+- KORELL Web verbunden (USB-Dongle, MAC-gebunden) - ggf. manuell verbinden
 - Hostname: `PyroTablet`
 - Wallpaper und Desktop-Icons korrekt
 - `sudo systemctl status pyroman` → active (running)

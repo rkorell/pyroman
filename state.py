@@ -11,6 +11,7 @@ Bietet Getter/Setter API für alle Module.
 Erstellt: 08.12.2025, 14:30
 Modified: 12.12.2025, 17:00 - authorized = True (Auth entfernt)
 Modified: 14.12.2025, 14:30 - AP7: authorized = False (Auth wiederhergestellt)
+Modified: 02.03.2026, 22:00 - Gruppenfeuer-Logik: Kanal 9/10 setzt Einzelkanäle mit
 """
 
 import config
@@ -59,14 +60,17 @@ def set_fire_enabled(value):
 # Koffer States
 # =============================================================================
 
+# Gruppenfeuer: Kanal 9 zündet Einzelkanäle 1-4, Kanal 10 zündet 5-8
+GRUPPENFEUER = {9: [1, 2, 3, 4], 10: [5, 6, 7, 8]}
+
 def get_koffer_state(koffer_id, kanal_nr):
     """
     Gibt zurück ob Koffer-Kanal gefeuert wurde.
-    
+
     Args:
         koffer_id: ID des Koffers
         kanal_nr: Kanalnummer (1-10)
-    
+
     Returns:
         True wenn gefeuert, sonst False
     """
@@ -76,26 +80,54 @@ def get_koffer_state(koffer_id, kanal_nr):
 def set_koffer_fired(koffer_id, kanal_nr):
     """
     Markiert Koffer-Kanal als gefeuert.
-    
+    Bei Gruppenfeuer (Kanal 9/10) werden auch die Einzelkanäle gesetzt.
+
     Args:
         koffer_id: ID des Koffers
         kanal_nr: Kanalnummer (1-10)
+
+    Returns:
+        Liste der gefeuerten (koffer_id, kanal_nr)-Paare
     """
     key = f"{koffer_id}-{kanal_nr}"
     _state['koffer_states'][key] = True
+    fired = [(koffer_id, kanal_nr)]
     logger.debug(f"Koffer {koffer_id} Kanal {kanal_nr} gefeuert")
+
+    if kanal_nr in GRUPPENFEUER:
+        for sub_kanal in GRUPPENFEUER[kanal_nr]:
+            sub_key = f"{koffer_id}-{sub_kanal}"
+            _state['koffer_states'][sub_key] = True
+            fired.append((koffer_id, sub_kanal))
+        logger.debug(f"Gruppenfeuer: Kanäle {GRUPPENFEUER[kanal_nr]} mit-gefeuert")
+
+    return fired
 
 def reset_koffer(koffer_id, kanal_nr):
     """
     Setzt Koffer-Kanal zurück.
-    
+    Bei Gruppenfeuer (Kanal 9/10) werden auch die Einzelkanäle zurückgesetzt.
+
     Args:
         koffer_id: ID des Koffers
         kanal_nr: Kanalnummer (1-10)
+
+    Returns:
+        Liste der zurückgesetzten (koffer_id, kanal_nr)-Paare
     """
     key = f"{koffer_id}-{kanal_nr}"
     _state['koffer_states'][key] = False
+    reset = [(koffer_id, kanal_nr)]
     logger.debug(f"Koffer {koffer_id} Kanal {kanal_nr} zurückgesetzt")
+
+    if kanal_nr in GRUPPENFEUER:
+        for sub_kanal in GRUPPENFEUER[kanal_nr]:
+            sub_key = f"{koffer_id}-{sub_kanal}"
+            _state['koffer_states'][sub_key] = False
+            reset.append((koffer_id, sub_kanal))
+        logger.debug(f"Gruppenfeuer: Kanäle {GRUPPENFEUER[kanal_nr]} mit-zurückgesetzt")
+
+    return reset
 
 # =============================================================================
 # Direktzünder States

@@ -11,6 +11,7 @@
  * Modified: 08.12.2025, 18:00 - Wetter-Styles: PWS-Card, Forecast-Tabelle
  * Modified: 08.12.2025, 19:30 - Logo-Text Gold-Farbverlauf (#D4A900 → #FFAA00)
  * Modified: 26.02.2026, 21:30 - Box-Test/Config Tab Styles
+ * Modified: 02.03.2026, 18:00 - Floorplan Styles
  */
 
 /* =============================================================================
@@ -1311,4 +1312,200 @@ a:hover {
     .forecast-condition {
         max-width: 150px;
     }
+}
+
+/* =============================================================================
+   Floorplan
+   ============================================================================= */
+
+/* Container-Override: Floorplan braucht volle Breite (Bild ist 1193px) */
+body.floorplan-page .container {
+    max-width: none;
+    padding-right: var(--spacing-md);
+}
+
+/* Scroll-Container: feste Bildgröße, KEINE Skalierung (Sicherheit!) */
+.floorplan-scroll {
+    overflow: auto;
+    -webkit-overflow-scrolling: touch;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    background: var(--bg-secondary);
+    text-align: center;
+}
+
+.floorplan-container {
+    position: relative;
+    display: inline-block;
+}
+
+.floorplan-bg {
+    display: block;
+    user-select: none;
+    -webkit-user-drag: none;
+}
+
+/* --- Zündposition --- */
+
+.fire-position {
+    position: absolute;
+    cursor: pointer;
+    text-align: center;
+    z-index: 10;
+    transition: transform 0.15s ease;
+    transform: translate(-50%, -50%);
+}
+
+.fire-position:active {
+    transform: translate(-50%, -50%) scale(0.9);
+}
+
+.fire-position .fire-btn {
+    width: 90px;
+    height: auto;
+    display: block;
+    margin: 0 auto;
+    user-select: none;
+    -webkit-user-drag: none;
+}
+
+.fire-position .pos-label {
+    display: block;
+    font-size: 1.1rem;
+    color: var(--text-primary);
+    background: rgba(0, 0, 0, 0.75);
+    padding: 3px 8px;
+    border-radius: var(--radius-sm);
+    margin-top: 4px;
+    white-space: nowrap;
+    font-weight: bold;
+    letter-spacing: 0.5px;
+}
+
+/* Gefeuert */
+.fire-position.fired {
+    cursor: default;
+}
+
+.fire-position.fired:active {
+    transform: translate(-50%, -50%);
+}
+
+/* Config-Modus: Zündbuttons deaktiviert, aber klickbar für Config */
+.floorplan-container.config-mode .fire-position {
+    cursor: pointer;
+}
+
+.floorplan-container.config-mode .fire-position .fire-btn {
+    opacity: 0.5;
+    filter: grayscale(50%);
+}
+
+.floorplan-container.config-mode .fire-position .pos-label {
+    background: rgba(255, 107, 0, 0.7);
+}
+
+/* Fire-Modus */
+.floorplan-container.fire-mode .fire-position.disabled {
+    cursor: default;
+}
+
+/* --- Steuer-Icons (Click-Areas auf dem Bild) --- */
+
+.fp-control-area {
+    position: absolute;
+    cursor: pointer;
+    z-index: 10;
+    /* Breite Touch-Area, ca. 2x Iconbreite */
+    width: 150px;
+    height: 80px;
+    transform: translate(-50%, -50%);
+    border-radius: var(--radius-md);
+    transition: background 0.15s;
+}
+
+.fp-control-area:active {
+    background: rgba(255, 255, 255, 0.15);
+}
+
+/* Aktiver Zustand (z.B. Config-Modus ein) - dezent, kein Rand */
+.fp-control-area.active {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+/* --- Config Popup (kompakt, am Klick-Ort) --- */
+
+.fp-config-popup {
+    display: none;
+    position: absolute;
+    z-index: 100;
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    padding: 8px;
+    box-shadow: 0 4px 16px var(--shadow-color);
+    white-space: nowrap;
+}
+
+.fp-config-popup.visible {
+    display: block;
+}
+
+.fp-config-popup-title {
+    margin: 0 0 6px 0;
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    text-align: center;
+}
+
+.fp-picker-row {
+    display: flex;
+    gap: 3px;
+    margin-bottom: 4px;
+}
+
+.fp-picker-row:last-child {
+    margin-bottom: 0;
+}
+
+.fp-picker-label {
+    display: flex;
+    align-items: center;
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    width: 14px;
+    flex-shrink: 0;
+}
+
+.fp-seg-btn {
+    width: 36px;
+    height: 36px;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    color: var(--text-primary);
+    font-size: 0.9rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.1s;
+    padding: 0;
+    line-height: 36px;
+    text-align: center;
+}
+
+.fp-seg-btn:active {
+    transform: scale(0.9);
+}
+
+.fp-seg-btn.active {
+    background: var(--accent-primary);
+    border-color: var(--accent-primary);
+    color: #fff;
+}
+
+.fp-config-fixed {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    text-align: center;
+    padding: 2px 0;
 }

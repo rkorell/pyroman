@@ -17,6 +17,8 @@ Modified: 14.12.2025, 14:30 - AP7: Auth-Logik wiederhergestellt mit Plattform-Er
 Modified: 14.12.2025, 15:30 - AP7: get_auth_check() durch is_auth_required() ersetzt
 Modified: 26.02.2026, 21:30 - Box-Test/Config Tab: Route, WS-Handler
 Modified: 28.02.2026, 17:00 - QS: wait_time Wertebereich begrenzt (0-12000)
+Modified: 02.03.2026, 18:00 - Floorplan: Route, WS-Handler, State-Broadcast
+Modified: 02.03.2026, 22:00 - Floorplan: Fired-State aus state.py, Gruppenfeuer-Broadcast
 """
 
 import json
@@ -31,6 +33,7 @@ import fire_control
 import direktzuender_wartung
 import wetter_api
 import authorize
+import floorplan_state
 
 # =============================================================================
 # Flask App Setup
@@ -81,6 +84,7 @@ def get_full_state_message():
     """Gibt vollständigen State für Client zurück (mit type)."""
     full_state = state.get_full_state()
     full_state['type'] = 'state_update'
+    full_state['floorplan'] = floorplan_state.get_full_state()
     return full_state
 
 # =============================================================================
@@ -131,6 +135,14 @@ def handle_ws_message(ws, message):
         handle_set_fire_enabled(message)
     elif msg_type == 'boxtest_command':
         handle_boxtest_command(message)
+    elif msg_type == 'floorplan_fire':
+        handle_floorplan_fire(message)
+    elif msg_type == 'floorplan_set_position':
+        handle_floorplan_set_position(message)
+    elif msg_type == 'floorplan_reset_defaults':
+        handle_floorplan_reset_defaults()
+    elif msg_type == 'floorplan_reset_fired':
+        handle_floorplan_reset_fired()
     elif msg_type == 'auth_start':
         handle_auth_start(ws)
     else:
@@ -143,16 +155,25 @@ def handle_fire(message):
     if target_type == 'koffer':
         koffer_id = message.get('koffer_id')
         kanal_nr = message.get('kanal_nr')
-        
+
         success, error_msg = fire_control.fire_koffer(koffer_id, kanal_nr)
-        
+
         if success:
+            # channel_fired für den gefeuerten Kanal senden
             broadcast({
                 'type': 'channel_fired',
                 'target_type': 'koffer',
                 'koffer_id': koffer_id,
                 'kanal_nr': kanal_nr
             })
+            # Bei Gruppenfeuer: auch für alle Einzelkanäle senden
+            for sub_kanal in state.GRUPPENFEUER.get(kanal_nr, []):
+                broadcast({
+                    'type': 'channel_fired',
+                    'target_type': 'koffer',
+                    'koffer_id': koffer_id,
+                    'kanal_nr': sub_kanal
+                })
         else:
             broadcast({'type': 'error', 'message': error_msg})
     
@@ -178,13 +199,21 @@ def handle_reset(message):
         koffer_id = message.get('koffer_id')
         kanal_nr = message.get('kanal_nr')
         state.reset_koffer(koffer_id, kanal_nr)
-        
+
         broadcast({
             'type': 'channel_reset',
             'target_type': 'koffer',
             'koffer_id': koffer_id,
             'kanal_nr': kanal_nr
         })
+        # Bei Gruppenfeuer: auch Einzelkanäle resetten
+        for sub_kanal in state.GRUPPENFEUER.get(kanal_nr, []):
+            broadcast({
+                'type': 'channel_reset',
+                'target_type': 'koffer',
+                'koffer_id': koffer_id,
+                'kanal_nr': sub_kanal
+            })
     
     elif target_type == 'direktzuender':
         nr = message.get('nr')
@@ -200,7 +229,7 @@ def handle_reset_all():
     """Setzt alle Kanäle zurück."""
     state.reset_all()
     broadcast(get_full_state_message())
-    logger.debug("Alle Kanäle zurückgesetzt")
+    logger.debug("Alle Kanäle zurückgesetzt (inkl. Floorplan)")
 
 def handle_set_fire_enabled(message):
     """Setzt globalen Feuer-Schalter."""
@@ -258,6 +287,87 @@ def handle_boxtest_command(message):
     except Exception as e:
         logger.error(f"BoxTest Sendefehler: {e}")
         broadcast({'type': 'error', 'message': f'Sendefehler: {e}'})
+
+def handle_floorplan_fire(message):
+    """Feuert eine Floorplan-Position."""
+    if not state.is_authorized() or not state.is_fire_enabled():
+        broadcast({'type': 'error', 'message': 'Feuer nicht freigegeben'})
+        return
+
+    pos_id = str(message.get('pos_id', ''))
+    pos = floorplan_state.get_position(pos_id)
+    if pos is None:
+        broadcast({'type': 'error', 'message': f'Unbekannte Position: {pos_id}'})
+        return
+
+    koffer_id = pos['koffer']
+    kanal_nr = pos['kanal']
+
+    success, error_msg = fire_control.fire_koffer(koffer_id, kanal_nr)
+
+    if success:
+        # channel_fired für Koffer-Tab (inkl. Gruppenfeuer-Einzelkanäle)
+        broadcast({
+            'type': 'channel_fired',
+            'target_type': 'koffer',
+            'koffer_id': koffer_id,
+            'kanal_nr': kanal_nr
+        })
+        for sub_kanal in state.GRUPPENFEUER.get(kanal_nr, []):
+            broadcast({
+                'type': 'channel_fired',
+                'target_type': 'koffer',
+                'koffer_id': koffer_id,
+                'kanal_nr': sub_kanal
+            })
+        # floorplan_fired für Floorplan-UI (Sound + Animation)
+        broadcast({
+            'type': 'floorplan_fired',
+            'pos_id': pos_id,
+            'koffer_id': koffer_id,
+            'kanal_nr': kanal_nr
+        })
+    else:
+        broadcast({'type': 'error', 'message': error_msg})
+
+def handle_floorplan_set_position(message):
+    """Ändert Koffer/Kanal-Zuordnung einer Floorplan-Position."""
+    if not state.is_authorized() or not state.is_fire_enabled():
+        broadcast({'type': 'error', 'message': 'Nicht freigegeben'})
+        return
+
+    pos_id = str(message.get('pos_id', ''))
+    koffer = message.get('koffer')
+    kanal = message.get('kanal')
+
+    if floorplan_state.set_position(pos_id, koffer, kanal):
+        broadcast({
+            'type': 'floorplan_position_changed',
+            'pos_id': pos_id,
+            'koffer': koffer,
+            'kanal': floorplan_state.get_position(pos_id)['kanal']
+        })
+
+def handle_floorplan_reset_defaults():
+    """Setzt alle Floorplan-Zuordnungen auf Defaults."""
+    if not state.is_authorized() or not state.is_fire_enabled():
+        broadcast({'type': 'error', 'message': 'Nicht freigegeben'})
+        return
+
+    floorplan_state.reset_defaults()
+    broadcast({
+        'type': 'floorplan_state',
+        'floorplan': floorplan_state.get_full_state()
+    })
+
+def handle_floorplan_reset_fired():
+    """Setzt alle Zünder zurück (Koffer-State wird komplett zurückgesetzt)."""
+    if not state.is_authorized() or not state.is_fire_enabled():
+        broadcast({'type': 'error', 'message': 'Nicht freigegeben'})
+        return
+
+    state.reset_all()
+    broadcast(get_full_state_message())
 
 def handle_auth_start(ws):
     """
@@ -366,6 +476,14 @@ def boxtest_page():
         return render_template('error.html', errors=config.get_startup_errors())
 
     return render_template('boxtest.html', active_page='boxtest')
+
+@app.route('/floorplan')
+def floorplan_page():
+    """Floorplan - Böller-Aufstellung mit Zündbuttons."""
+    if not config.is_valid():
+        return render_template('error.html', errors=config.get_startup_errors())
+
+    return render_template('floorplan.html', active_page='floorplan')
 
 # =============================================================================
 # API Routes

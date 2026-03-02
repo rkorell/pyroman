@@ -1,0 +1,142 @@
+<!--
+    floorplan.html - PyroMan Floorplan
+
+    Böller-Aufstellung mit Zündbuttons auf Hintergrundbild.
+    Feste Bildgröße (keine Skalierung!) - Sicherheit!
+    Koordinaten manuell vermessen auf fp_boeller_mod.png (1193x1140).
+
+    (c) Dr. Ralf Korell, 2025/26
+
+    Erstellt: 02.03.2026, 18:00
+    Modified: 02.03.2026, 20:00 - Koordinaten-Swap, Click-Areas, Icon-Größe, Labels
+    Modified: 02.03.2026, 20:30 - Manuell vermessene Koordinaten, _mod Bild, Sound-Area raus
+-->
+{% extends "base.html" %}
+
+{% block title %}Floorplan{% endblock %}
+{% block body_class %}floorplan-page{% endblock %}
+
+{% block extra_css %}
+<style>
+    #reset-all-btn { display: none; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="fade-in">
+    <div class="floorplan-scroll">
+        <div class="floorplan-container" id="floorplan-container">
+            <img src="{{ url_for('static', filename='images/floorplan/fp_boeller_mod.png') }}"
+                 class="floorplan-bg" alt="Böller-Aufstellung" draggable="false">
+
+            <!-- Koordinaten: manuell vermessen (left, top) auf 1193x1140 Bild -->
+
+            <!-- Position 1: Kleine Kanone -->
+            <div class="fire-position" data-pos="1" style="left: 317px; top: 401px;">
+                <img src="{{ url_for('static', filename='images/zuenderklein.png') }}"
+                     class="fire-btn" alt="Zünder 1">
+                <span class="pos-label">K2 / Ch1</span>
+            </div>
+
+            <!-- Position 2: Einzelmörser -->
+            <div class="fire-position" data-pos="2" style="left: 604px; top: 364px;">
+                <img src="{{ url_for('static', filename='images/zuenderklein.png') }}"
+                     class="fire-btn" alt="Zünder 2">
+                <span class="pos-label">K2 / Ch2</span>
+            </div>
+
+            <!-- Position 3: Große Kanone -->
+            <div class="fire-position" data-pos="3" style="left: 520px; top: 736px;">
+                <img src="{{ url_for('static', filename='images/zuenderklein.png') }}"
+                     class="fire-btn" alt="Zünder 3">
+                <span class="pos-label">K2 / Ch3</span>
+            </div>
+
+            <!-- Position 4: Zweifach-Mörser links -->
+            <div class="fire-position" data-pos="4" style="left: 713px; top: 732px;">
+                <img src="{{ url_for('static', filename='images/zuenderklein.png') }}"
+                     class="fire-btn" alt="Zünder 4">
+                <span class="pos-label">K2 / Ch4</span>
+            </div>
+
+            <!-- Position 5: Große Kanone (eigener Koffer) -->
+            <div class="fire-position" data-pos="5" style="left: 978px; top: 435px;">
+                <img src="{{ url_for('static', filename='images/zuenderklein.png') }}"
+                     class="fire-btn" alt="Zünder 5">
+                <span class="pos-label">K3 / Ch1</span>
+            </div>
+
+            <!-- Position 6: Vierfach-Mörser Rohr 1 -->
+            <div class="fire-position" data-pos="6" style="left: 305px; top: 1074px;">
+                <img src="{{ url_for('static', filename='images/zuenderklein.png') }}"
+                     class="fire-btn" alt="Zünder 6">
+                <span class="pos-label">K2 / Ch5</span>
+            </div>
+
+            <!-- Position 7: Vierfach-Mörser Rohr 2 -->
+            <div class="fire-position" data-pos="7" style="left: 461px; top: 1071px;">
+                <img src="{{ url_for('static', filename='images/zuenderklein.png') }}"
+                     class="fire-btn" alt="Zünder 7">
+                <span class="pos-label">K2 / Ch6</span>
+            </div>
+
+            <!-- Position 8: Vierfach-Mörser Rohr 3 -->
+            <div class="fire-position" data-pos="8" style="left: 624px; top: 1071px;">
+                <img src="{{ url_for('static', filename='images/zuenderklein.png') }}"
+                     class="fire-btn" alt="Zünder 8">
+                <span class="pos-label">K2 / Ch7</span>
+            </div>
+
+            <!-- Position 9: Vierfach-Mörser Rohr 4 -->
+            <div class="fire-position" data-pos="9" style="left: 789px; top: 1074px;">
+                <img src="{{ url_for('static', filename='images/zuenderklein.png') }}"
+                     class="fire-btn" alt="Zünder 9">
+                <span class="pos-label">K2 / Ch8</span>
+            </div>
+
+            <!-- Gruppenfeuer G1: Kanal 1-4 -->
+            <div class="fire-position fire-group" data-pos="G1" style="left: 67px; top: 916px;">
+                <img src="{{ url_for('static', filename='images/zuenderklein.png') }}"
+                     class="fire-btn" alt="Gruppe 1-4">
+                <span class="pos-label">Gruppe 1</span>
+            </div>
+
+            <!-- Gruppenfeuer G2: Kanal 5-8 -->
+            <div class="fire-position fire-group" data-pos="G2" style="left: 67px; top: 1039px;">
+                <img src="{{ url_for('static', filename='images/zuenderklein.png') }}"
+                     class="fire-btn" alt="Gruppe 5-8">
+                <span class="pos-label">Gruppe 2</span>
+            </div>
+
+            <!-- === Steuer-Icons (Click-Areas auf dem Bild) === -->
+            <!-- 3 verbleibende: Zünder aus, Box Default, Einstellungen erlauben -->
+            <!-- Sound ist in Kopfzeile, Böllern erlauben ist globaler Fire-Master -->
+
+            <!-- Alle Zünder aus (etwas tiefer) -->
+            <div class="fp-control-area" id="fp-reset-fired"
+                 data-action="reset_fired" style="top: 800px; left: 1120px;"
+                 title="Alle Zünder aus"></div>
+
+            <!-- Box Default (etwas höher) -->
+            <div class="fp-control-area" id="fp-reset-defaults"
+                 data-action="reset_defaults" style="top: 885px; left: 1120px;"
+                 title="Standardbox einstellen"></div>
+
+            <!-- Einstellungen erlauben -->
+            <div class="fp-control-area" id="fp-config-mode"
+                 data-action="config_mode" style="top: 975px; left: 1120px;"
+                 title="Einstellungen erlauben"></div>
+
+        </div>
+    </div>
+
+    <!-- Config Popup (kompakt, öffnet am Klick-Ort, innerhalb des Floorplan-Containers) -->
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.body.dataset.kanonenschussSound = "{{ url_for('static', filename='sounds/kanonenschuss.wav') }}";
+</script>
+<script src="{{ url_for('static', filename='js/floorplan.js') }}"></script>
+{% endblock %}

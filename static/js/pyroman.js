@@ -316,9 +316,7 @@ function resetChannel(targetType, kofferId, kanalNr, nr) {
 }
 
 function resetAll() {
-    if (confirm('Wirklich ALLE Kanäle zurücksetzen?')) {
-        sendMessage('reset_all', {});
-    }
+    sendMessage('reset_all', {});
 }
 
 function toggleFireEnabled() {
