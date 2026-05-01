@@ -4,6 +4,9 @@
 secrets.json
 config.json
 
+# Runtime-State (wird automatisch erzeugt)
+direktzuender_status.json
+
 # Claude Code (projektspezifisch, nicht ins Repo)
 CLAUDE.md
 .claude/
